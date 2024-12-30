@@ -1,0 +1,500 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/DEVIL91053_1/coffee-pos/1.0.0
+info:
+  version: "1.0.0"
+  title: Sample Password Flow OAuth2 Project
+  description: >-
+    This is an example of using OAuth2 Password Flow in a specification to
+    describe security to your API.
+security:
+  - password:
+      - read
+      - write
+
+paths:
+  /seats:
+    get:
+      tags:
+        - seats
+      description: returns all seats
+      operationId: getSeats
+      responses:
+        '200':
+          description: Seats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatInfo'
+  /seats/add:
+    post:
+      tags:
+        - seats
+      operationId: addSeat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatInfo'
+      responses:
+        '200':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  '/seats/<id>':
+    get:
+      tags:
+        - seats
+      description: returns seat detail
+      operationId: getSeatDetail
+      responses:
+        '200':
+          description: Seat Detail
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SeatDetail'
+    delete:
+      tags:
+        - seats
+      description: delete an existing seat
+      operationId: deleteSeat
+      responses:
+        '200':
+          description: Successfully deleted seat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /employees:
+    get:
+      tags:
+        - employees
+      description: return all employees
+      operationId: getEmployees
+      responses:
+        '200':
+          description: All the employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmployeeInfo'
+  '/employees/<id>':
+    get:
+      tags:
+        - employees
+      description: get employee detail
+      operationId: getEmployeeDetail
+      responses:
+        '200':
+          description: return employee detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeDetail'
+    delete:
+      tags:
+        - employees
+      description: delete an existing employee, not physically
+      operationId: deleteEmployee
+      responses:
+        '200':
+          description: Successfully deleted employee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /employees/add:
+    post:
+      tags:
+        - employees
+      description: add employee
+      operationId: addEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeInfo'
+      responses:
+        '200':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /parties:
+    get:
+      tags:
+        - parties
+      description: return all parties
+      operationId: getParties
+      responses:
+        '200':
+          description: All the parties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Party'
+  /parties/add:
+    post:
+      tags:
+        - parties
+      description: add party
+      operationId: addParty
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Party'
+      responses:
+        '200':
+          description: Add party
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  '/parties/<id>':
+    put:
+      tags:
+        - parties
+      description: deactivate party, party has left
+      operationId: deactivateParty
+      responses:
+        '200':
+          description: Successfully deactivated party
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /menu:
+    get:
+      tags:
+        - menu
+      operationId: getMenu
+      description: return the menu
+      responses:
+        '200':
+          description: The menu
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Menu'
+  /menu/addItem:
+    post:
+      tags:
+        - menu
+      operationId: addItem
+      description: add item to menu
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        '200':
+          description: successfully added item to menu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  '/menu/item/<id>':
+    delete:
+      tags:
+        - menu
+      operationId: deleteItem
+      description: delete item from menu
+      responses:
+        '200':
+          description: successfully deleted item from menu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /menu/discount:
+    post:
+      tags:
+        - menu
+      operationId: addDiscount
+      description: add discount combination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Discount'
+      responses:
+        '200':
+          description: successfully added new discount information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  '/menu/discount/<id>':
+    delete:
+      tags:
+        - menu
+      operationId: deleteDiscount
+      description: delete discount combination
+      responses:
+        '200':
+          description: successfully deleted discount combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      
+  /orders:
+    get:
+      tags:
+        - orders
+      operationId: getOrders
+      parameters:
+        - in: query
+          name: party
+          description: name of the party
+          schema:
+            type: string
+        - in: query
+          name: method
+          description: payment method
+          schema:
+            type: string
+        - in: query
+          name: paid
+          description: whether the transaction is fulfilled
+          schema:
+            type: boolean
+        - in: query
+          name: fulfilled
+          description: whether the order is fulfilled
+          schema:
+            type: boolean
+        - in: query
+          name: amount_min
+          description: filter for transaction amount minumun
+          schema:
+            type: number
+        - in: query
+          name: amount_max
+          description: filter for transaction amount maximum
+          schema:
+            type: number
+        - in: query
+          name: date_start
+          description: filter for transaction date after this
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: date_end
+          description: filter for transaction date before this
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: All the transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+  /orders/add:
+    post:
+      tags:
+        - orders
+      operationId: addOrder
+      description: add new order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '200':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /orders/update:
+    put:
+      tags:
+        - orders
+      description: update an order
+      operationId: updateOrder
+      responses:
+        '200':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          format: int32
+        message:
+          type: string
+          example: everything is ok
+    SeatInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'A1'
+        floor:
+          type: string
+          example: 'B1'
+        position_x:
+          type: integer
+          format: integer32
+          example: 10 
+        position_y:
+          type: integer
+          format: integer32
+          example: 4
+    SeatDetail:
+      type: object
+      properties:
+        seat:
+          $ref: '#/components/schemas/SeatInfo'
+        group:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeatInfo'
+        occupied:
+          type: boolean
+    EmployeeInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: integer32
+          example: 2
+        name:
+          type: string
+          example: '李大華'
+        phonenumber:
+          type: string
+          example: '+886912345678'
+    EmployeeDetail:
+      type: object
+      properties:
+        employee:
+          $ref: '#/components/schemas/EmployeeInfo'
+    Party:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        seat:
+          $ref: '#/components/schemas/SeatInfo'
+        size:
+          type: number
+          example: 2
+    PaymentMethod:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'cash'
+    ItemType:
+      type: object
+      properties:
+        name:
+          type: string
+    Item:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'coffee'
+        price:
+          type: number
+        item_type:
+          type: string
+    MenuSection:
+      type: object
+      properties:
+        item_type:
+          $ref: '#/components/schemas/ItemType'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+    Menu:
+      type: object
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuSection'
+    Discount:
+      type: object
+      properties:
+        name:
+          type: string
+        combination:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemType'
+    Order:
+      type: object
+      properties:
+        party:
+          $ref: '#/components/schemas/Party'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+        amount:
+          type: number
+        transaction_date:
+          type: string
+          format: date-time
+        transaction_method:
+          $ref: '#/components/schemas/PaymentMethod'
+        paid:
+          type: boolean
+        paid_timestamp:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+  securitySchemes:
+    password:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: 'http://example.com/oauth/token'
+          scopes:
+            write: allows modifying resources
+            read: allows reading resources
