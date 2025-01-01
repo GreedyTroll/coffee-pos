@@ -90,18 +90,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/EmployeeInfo'
   '/employees/<id>':
-    get:
-      tags:
-        - employees
-      description: get employee detail
-      operationId: getEmployeeDetail
-      responses:
-        '200':
-          description: return employee detail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmployeeDetail'
     delete:
       tags:
         - employees
@@ -402,11 +390,6 @@ components:
         phonenumber:
           type: string
           example: '+886912345678'
-    EmployeeDetail:
-      type: object
-      properties:
-        employee:
-          $ref: '#/components/schemas/EmployeeInfo'
     Party:
       type: object
       properties:
