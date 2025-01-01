@@ -1,9 +1,10 @@
 -- Seats table
 CREATE TABLE Seats (
     SeatID VARCHAR(5) PRIMARY KEY,
-    Floor INT,
-    PosX INT,
-    PosY INT
+    Floor INT NOT NULL,
+    PosX INT NOT NULL,
+    PosY INT NOT NULL,
+    isTaken Boolean DEFAULT FALSE
 );
 
 -- Customers table
