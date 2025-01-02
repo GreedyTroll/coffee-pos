@@ -10,7 +10,7 @@ CREATE TABLE Seats (
 -- Customers table
 CREATE TABLE Parties (
     PartyID SERIAL PRIMARY KEY,
-    Note TEXT,
+    Notes TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -51,7 +51,25 @@ CREATE TABLE Items (
     Description TEXT,
     Price DECIMAL(10, 2),
     CategoryID INT,
+    IsDeleted Boolean DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+);
+
+-- Discount table
+CREATE TABLE Discounts(
+    DiscountID SERIAL PRIMARY KEY,
+    DiscountName VARCHAR(20) UNIQUE NOT NULL,
+    Amount DECIMAL(10, 2)
+);
+
+-- Discount Combination table
+CREATE TABLE DiscountCombinations(
+    CombinationID SERIAL PRIMARY KEY,
+    DiscountID INT,
+    CategoryID INT,
+    Quantity INT,
+    FOREIGN KEY (DiscountID) REFERENCES Discounts(DiscountID) ON DELETE CASCADE,
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
 
@@ -73,6 +91,6 @@ CREATE TABLE OrderItems (
     ProductID INT,
     Quantity INT,
     Price DECIMAL(10, 2),
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Items(ProductID)
 );
