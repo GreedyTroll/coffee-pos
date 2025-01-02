@@ -25,14 +25,14 @@ class Party(db.Model):
     partyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=func.now())
+    left_at = db.Column(db.DateTime, nullable=True)
+
 
 class SeatAssignment(db.Model):
     __tablename__ = 'seatassignments'
     assignmentid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'), nullable=False)
     seatid = db.Column(db.String(5), db.ForeignKey('seats.seatid'), nullable=False)
-    assigned_at = db.Column(db.DateTime, default=func.now())
-    left_at = db.Column(db.DateTime, nullable=True)
 
 class Employee(db.Model):
     __tablename__ = 'employees'
