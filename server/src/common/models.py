@@ -46,7 +46,7 @@ class Category(db.Model):
     __tablename__ = 'categories'
     categoryid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     menuorder = db.Column(db.Integer)
-    categoryname = db.Column(db.String(100))
+    categoryname = db.Column(db.String(100), unique=True)
     description = db.Column(db.Text)
     createdat = db.Column(db.DateTime, default=func.now())
 

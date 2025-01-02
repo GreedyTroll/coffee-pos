@@ -37,7 +37,7 @@ CREATE TABLE Employees (
 CREATE TABLE Categories (
     CategoryID SERIAL PRIMARY KEY,
     MenuOrder INT,
-    CategoryName VARCHAR(100),
+    CategoryName VARCHAR(100) UNIQUE,
     Description TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,7 +52,7 @@ CREATE TABLE Items (
     CategoryID INT,
     IsDeleted Boolean DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE SET NULL
 );
 
 -- Discount table
