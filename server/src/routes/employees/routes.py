@@ -1,6 +1,5 @@
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 from common.models import db, Employee
-from common.app import app
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from common.models import model_to_dict
@@ -8,13 +7,15 @@ from common.models import model_to_dict
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-@app.route('/employees', methods=['GET'])
+employees_bp = Blueprint('employees', __name__)
+
+@employees_bp.route('', methods = ['GET'])
 def getEmployees():
     employees = Employee.query.all()
     employees_dict = [model_to_dict(model) for model in employees]
     return jsonify(employees_dict)
 
-@app.route('/employees/add', methods=['POST'])
+@employees_bp.route('/add', methods = ['POST'])
 def addEmployee():
     if request.is_json:
         data = request.get_json()
@@ -26,7 +27,11 @@ def addEmployee():
         return {"message": 'no data received'}, 400
     
     try:
-        new_employee = Employee(data)
+        new_employee = Employee(
+            name=data["name"],
+            position=data["position"],
+            phone=data["phone"]
+        )
         db.session.add(new_employee)
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
     except SQLAlchemyError as e:
@@ -36,7 +41,7 @@ def addEmployee():
     
     return {'success': True}, 200
 
-@app.route('/employees/<int:id>', methods=['DELETE'])
+@employees_bp.route('/<int:id>', methods = ['DELETE'])
 def deleteEmployee(id):
     if not id:
         return {'error': 'no id provided'}, 400
@@ -54,6 +59,3 @@ def deleteEmployee(id):
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
-
-if __name__ == "__main__":
-    app.run()

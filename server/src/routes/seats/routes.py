@@ -1,6 +1,5 @@
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 from common.models import db, Seat
-from common.app import app
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from common.models import model_to_dict
@@ -8,13 +7,15 @@ from common.models import model_to_dict
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-@app.route('/seats', methods=['GET'])
+seats_bp = Blueprint('seats', __name__)
+
+@seats_bp.route('', methods=['GET'])
 def getSeats():
     seats = Seat.query.all()
     seats_dict = [model_to_dict(model) for model in seats]
     return jsonify(seats_dict)
 
-@app.route('/seats/add', methods=['POST'])
+@seats_bp.route('/add', methods=['POST'])
 def addSeat():
     if request.is_json:
         data = request.get_json()
@@ -41,7 +42,7 @@ def addSeat():
     
     return {'success': True}, 200
 
-@app.route('/seats/<int:id>', methods=['DELETE'])
+@seats_bp.route('/<string:id>', methods=['DELETE'])
 def deleteSeat(id):
     if not id:
         return {'error': 'no id provided'}, 400
@@ -59,6 +60,3 @@ def deleteSeat(id):
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
-
-if __name__ == "__main__":
-    app.run()
