@@ -47,7 +47,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-  '/seats/<id>':  
+  '/seats/<id>':
     delete:
       tags:
         - seats
@@ -194,6 +194,37 @@ paths:
       responses:
         '200':
           description: successfully deleted item from menu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /menu/addCategory:
+    post:
+      tags:
+        - menu
+      operationId: addCategory
+      description: add product category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          description: successfully added product category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  '/menu/category/<id>':
+    delete:
+      tags:
+        - menu
+      operationId: deleteCategory
+      description: delete product category
+      responses:
+        '200':
+          description: successfully deleted product category
           content:
             application/json:
               schema:
@@ -424,12 +455,19 @@ components:
     Discount:
       type: object
       properties:
-        name:
+        discount_name:
           type: string
         combination:
           type: array
           items:
-            $ref: '#/components/schemas/Category'
+            $ref: '#/components/schemas/DiscountCombination'
+    DiscountCombination:
+      type: object
+      properties:
+        category_name:
+          type: string
+        quantity:
+          type: number
     Order:
       type: object
       properties:
