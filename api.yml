@@ -47,21 +47,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-  '/seats/<id>':
-    get:
-      tags:
-        - seats
-      description: returns seat detail
-      operationId: getSeatDetail
-      responses:
-        '200':
-          description: Seat Detail
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SeatDetail'
+  '/seats/<id>':  
     delete:
       tags:
         - seats
@@ -90,18 +76,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/EmployeeInfo'
   '/employees/<id>':
-    get:
-      tags:
-        - employees
-      description: get employee detail
-      operationId: getEmployeeDetail
-      responses:
-        '200':
-          description: return employee detail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmployeeDetail'
     delete:
       tags:
         - employees
@@ -378,17 +352,6 @@ components:
           type: integer
           format: integer32
           example: 4
-    SeatDetail:
-      type: object
-      properties:
-        seat:
-          $ref: '#/components/schemas/SeatInfo'
-        group:
-          type: array
-          items:
-            $ref: '#/components/schemas/SeatInfo'
-        occupied:
-          type: boolean
     EmployeeInfo:
       type: object
       properties:
@@ -402,11 +365,6 @@ components:
         phonenumber:
           type: string
           example: '+886912345678'
-    EmployeeDetail:
-      type: object
-      properties:
-        employee:
-          $ref: '#/components/schemas/EmployeeInfo'
     Party:
       type: object
       properties:
@@ -424,26 +382,34 @@ components:
         name:
           type: string
           example: 'cash'
-    ItemType:
+    Category:
       type: object
       properties:
-        name:
+        category_name:
+          type: string
+        menu_order:
+          type: number
+        description:
           type: string
     Item:
       type: object
       properties:
-        name:
+        product_name:
           type: string
           example: 'coffee'
         price:
           type: number
-        item_type:
+        category:
+          type: string
+        menu_order:
+          type: number
+        description:
           type: string
     MenuSection:
       type: object
       properties:
         item_type:
-          $ref: '#/components/schemas/ItemType'
+          $ref: '#/components/schemas/Category'
         items:
           type: array
           items:
@@ -463,7 +429,7 @@ components:
         combination:
           type: array
           items:
-            $ref: '#/components/schemas/ItemType'
+            $ref: '#/components/schemas/Category'
     Order:
       type: object
       properties:

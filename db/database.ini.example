@@ -1,0 +1,6 @@
+[test]
+host=localhost
+database=CoffeeShopPOS
+user=postgres
+password=<PASSWORD>
+port=5432
