@@ -461,6 +461,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DiscountCombination'
+        amount:
+          type: number
     DiscountCombination:
       type: object
       properties:
