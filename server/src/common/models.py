@@ -24,6 +24,7 @@ class Party(db.Model):
     __tablename__ = 'parties'
     partyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     notes = db.Column(db.Text)
+    partysize = db.Column(db.Integer, default=1)
     createdat = db.Column(db.DateTime, default=func.now())
     leftat = db.Column(db.DateTime, nullable=True)
 
