@@ -375,11 +375,11 @@ components:
         floor:
           type: string
           example: 'B1'
-        position_x:
+        posx:
           type: integer
           format: integer32
           example: 10 
-        position_y:
+        posy:
           type: integer
           format: integer32
           example: 4
@@ -439,7 +439,7 @@ components:
     MenuSection:
       type: object
       properties:
-        item_type:
+        category:
           $ref: '#/components/schemas/Category'
         items:
           type: array
