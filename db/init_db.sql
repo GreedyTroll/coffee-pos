@@ -1,12 +1,3 @@
--- Seats table
-CREATE TABLE Seats (
-    SeatID VARCHAR(5) PRIMARY KEY,
-    Floor INT NOT NULL,
-    PosX INT NOT NULL,
-    PosY INT NOT NULL,
-    isTaken Boolean DEFAULT FALSE
-);
-
 -- Customers table
 CREATE TABLE Parties (
     PartyID SERIAL PRIMARY KEY,
@@ -16,13 +7,14 @@ CREATE TABLE Parties (
     LeftAt TIMESTAMP
 );
 
--- Seats assignment table
-CREATE TABLE SeatAssignments (
-    AssignmentID SERIAL PRIMARY KEY,
-    PartyID INT NOT NULL,
-    SeatID VARCHAR(5) NOT NULL,
-    FOREIGN KEY(PartyID) REFERENCES Parties(PartyID),
-    FOREIGN KEY(SeatID) REFERENCES Seats(SeatID)
+-- Seats table
+CREATE TABLE Seats (
+    SeatID VARCHAR(5) PRIMARY KEY,
+    Floor INT NOT NULL,
+    PosX INT NOT NULL,
+    PosY INT NOT NULL,
+    PartyID INT,
+    FOREIGN KEY(PartyID) REFERENCES Parties(PartyID)
 );
 
 -- Employees table

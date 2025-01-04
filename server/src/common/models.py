@@ -12,14 +12,6 @@ def model_to_dict(model):
         result[column.name] = value
     return result
 
-class Seat(db.Model):
-    __tablename__ = 'seats'
-    seatid = db.Column(db.String(5), primary_key=True)
-    floor = db.Column(db.Integer, nullable=False)
-    posx = db.Column(db.Integer, nullable=False)
-    posy = db.Column(db.Integer, nullable=False)
-    istaken = db.Column(db.Boolean, default=False)
-
 class Party(db.Model):
     __tablename__ = 'parties'
     partyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -28,12 +20,14 @@ class Party(db.Model):
     createdat = db.Column(db.DateTime, default=func.now())
     leftat = db.Column(db.DateTime, nullable=True)
 
-
-class SeatAssignment(db.Model):
-    __tablename__ = 'seatassignments'
-    assignmentid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'), nullable=False)
-    seatid = db.Column(db.String(5), db.ForeignKey('seats.seatid'), nullable=False)
+class Seat(db.Model):
+    __tablename__ = 'seats'
+    seatid = db.Column(db.String(5), primary_key=True)
+    floor = db.Column(db.Integer, nullable=False)
+    posx = db.Column(db.Integer, nullable=False)
+    posy = db.Column(db.Integer, nullable=False)
+    partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'), nullable=True)
+    # istaken = db.Column(db.Boolean, default=False)
 
 class Employee(db.Model):
     __tablename__ = 'employees'
