@@ -40,7 +40,7 @@ def addSeat():
         logger.info(f'Error occurred: {e}')
         return {'Error': f'{e}'}, 500
     
-    return {'success': True}, 200
+    return {'success': True, 'seat_id': new_seat.seatid}, 200
 
 @seats_bp.route('/<string:id>', methods=['DELETE'])
 def deleteSeat(id):
