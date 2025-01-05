@@ -40,6 +40,7 @@ def main():
 
     # run file
     run_sql_script("db/init_db.sql", args.section)
+    run_sql_script("db/init_data.sql", args.section)
 
 if __name__ == '__main__':
     main()
