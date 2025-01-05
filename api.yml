@@ -47,7 +47,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-  '/seats/<id>':  
+  '/seats/<id>':
     delete:
       tags:
         - seats
@@ -152,6 +152,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
+  /parties/assignSeats:
+    post:
+      tags:
+        - parties
+      description: assign seats for party
+      operationId: assignSeats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatAssignment'
+      responses:
+        '200':
+          description: Add party
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
   /menu:
     get:
       tags:
@@ -194,6 +212,37 @@ paths:
       responses:
         '200':
           description: successfully deleted item from menu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  /menu/addCategory:
+    post:
+      tags:
+        - menu
+      operationId: addCategory
+      description: add product category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          description: successfully added product category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+  '/menu/category/<id>':
+    delete:
+      tags:
+        - menu
+      operationId: deleteCategory
+      description: delete product category
+      responses:
+        '200':
+          description: successfully deleted product category
           content:
             application/json:
               schema:
@@ -344,11 +393,11 @@ components:
         floor:
           type: string
           example: 'B1'
-        position_x:
+        posx:
           type: integer
           format: integer32
           example: 10 
-        position_y:
+        posy:
           type: integer
           format: integer32
           example: 4
@@ -368,14 +417,20 @@ components:
     Party:
       type: object
       properties:
-        name:
-          type: string
-          nullable: true
-        seat:
-          $ref: '#/components/schemas/SeatInfo'
-        size:
+        party_size:
           type: number
           example: 2
+        notes:
+          type: string
+    SeatAssignment:
+      type: object
+      properties:
+        party_id:
+          type: number
+        seats:
+          type: array
+          items:
+            type: string
     PaymentMethod:
       type: object
       properties:
@@ -408,7 +463,7 @@ components:
     MenuSection:
       type: object
       properties:
-        item_type:
+        category:
           $ref: '#/components/schemas/Category'
         items:
           type: array
@@ -424,12 +479,21 @@ components:
     Discount:
       type: object
       properties:
-        name:
+        discount_name:
           type: string
         combination:
           type: array
           items:
-            $ref: '#/components/schemas/Category'
+            $ref: '#/components/schemas/DiscountCombination'
+        amount:
+          type: number
+    DiscountCombination:
+      type: object
+      properties:
+        category_name:
+          type: string
+        quantity:
+          type: number
     Order:
       type: object
       properties:

@@ -1,28 +1,20 @@
--- Seats table
-CREATE TABLE Seats (
-    SeatID VARCHAR(5) PRIMARY KEY,
-    Floor INT NOT NULL,
-    PosX INT NOT NULL,
-    PosY INT NOT NULL,
-    isTaken Boolean DEFAULT FALSE
-);
-
 -- Customers table
 CREATE TABLE Parties (
     PartyID SERIAL PRIMARY KEY,
-    Note TEXT,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    Notes TEXT,
+    PartySize INT DEFAULT 1,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    LeftAt TIMESTAMP
 );
 
--- Seats assignment table
-CREATE TABLE SeatAssignments (
-    AssignmentID SERIAL PRIMARY KEY,
-    PartyID INT NOT NULL,
-    SeatID VARCHAR(5) NOT NULL,
-    AssignedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    LeftAt TIMESTAMP,
-    FOREIGN KEY(PartyID) REFERENCES Parties(PartyID),
-    FOREIGN KEY(SeatID) REFERENCES Seats(SeatID)
+-- Seats table
+CREATE TABLE Seats (
+    SeatID VARCHAR(10) PRIMARY KEY,
+    Floor INT NOT NULL,
+    PosX INT NOT NULL,
+    PosY INT NOT NULL,
+    PartyID INT,
+    FOREIGN KEY(PartyID) REFERENCES Parties(PartyID)
 );
 
 -- Employees table
@@ -38,7 +30,7 @@ CREATE TABLE Employees (
 CREATE TABLE Categories (
     CategoryID SERIAL PRIMARY KEY,
     MenuOrder INT,
-    CategoryName VARCHAR(100),
+    CategoryName VARCHAR(100) UNIQUE,
     Description TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -51,7 +43,25 @@ CREATE TABLE Items (
     Description TEXT,
     Price DECIMAL(10, 2),
     CategoryID INT,
+    IsDeleted Boolean DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE SET NULL
+);
+
+-- Discount table
+CREATE TABLE Discounts(
+    DiscountID SERIAL PRIMARY KEY,
+    DiscountName VARCHAR(20) UNIQUE NOT NULL,
+    Amount DECIMAL(10, 2)
+);
+
+-- Discount Combination table
+CREATE TABLE DiscountCombinations(
+    CombinationID SERIAL PRIMARY KEY,
+    DiscountID INT,
+    CategoryID INT,
+    Quantity INT,
+    FOREIGN KEY (DiscountID) REFERENCES Discounts(DiscountID) ON DELETE CASCADE,
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
 
@@ -73,6 +83,6 @@ CREATE TABLE OrderItems (
     ProductID INT,
     Quantity INT,
     Price DECIMAL(10, 2),
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Items(ProductID)
 );
