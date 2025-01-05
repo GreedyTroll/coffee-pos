@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Party, Seat, SeatAssignment
+from common.models import db, Party, Seat
 from sqlalchemy.exc import SQLAlchemyError
+import json
+
 import pytz
 from datetime import datetime
 # from datetime import timezone, timedelta
@@ -14,7 +16,7 @@ parties_bp = Blueprint('parties', __name__)
 
 @parties_bp.route('',methods=['GET'])
 def parties():
-    parties = Party.query.all()
+    parties = Party.query.filter(Party.leftat.is_(None)).all()
     parties_dict = [model_to_dict(model) for model in parties]
     return jsonify(parties_dict)
 
@@ -53,8 +55,15 @@ def deactivateParty(id):
     if not party:
         return {'error': "party id not found"}, 400
     
+    released_seats = []
     try:
         # unassign all seats
+        seats = Seat.query.all()
+        for seat in seats:
+            if seat.partyid == party.partyid:
+                seat.partyid = None
+                released_seats.append(seat.seatid)
+        db.session.flush()
 
         local_timezone = pytz.timezone('Asia/Taipei')
         party.leftat = datetime.now(local_timezone)
@@ -64,9 +73,9 @@ def deactivateParty(id):
         logger.info(f'Error occurred: {e}')
         return {'Error': f'{e}'}, 500
 
-    return {'success': True}, 200
+    return {'success': True, 'released_seats': json.dumps(released_seats)}, 200
 
-@parties_bp.route('/assignSeats', method=['POST'])
+@parties_bp.route('/assignSeats', methods=['POST'])
 def assignSeats():
     if request.is_json:
         data = request.get_json()
@@ -91,14 +100,11 @@ def assignSeats():
             seat = Seat.query.get(seat_id)
             if seat is None:
                 return {"message": 'invalid seat id {}'.format(seat_id)}, 400
-            seat_assignment = SeatAssignment(
-                partyid = party.partyid,
-                seatid = seat.seatid
-            )
-            db.session.add(seat_assignment)
+            seat.partyid = party.partyid
             db.session.flush()
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
         logger.info(f'Error occurred: {e}')
         return {'Error': f'{e}'}, 500
+    return {"success": True}, 200
