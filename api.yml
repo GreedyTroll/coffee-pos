@@ -152,6 +152,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
+  /parties/assignSeats:
+    post:
+      tags:
+        - parties
+      description: assign seats for party
+      operationId: assignSeats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatAssignment'
+      responses:
+        '200':
+          description: Add party
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
   /menu:
     get:
       tags:
@@ -399,14 +417,20 @@ components:
     Party:
       type: object
       properties:
-        name:
-          type: string
-          nullable: true
-        seat:
-          $ref: '#/components/schemas/SeatInfo'
-        size:
+        party_size:
           type: number
           example: 2
+        notes:
+          type: string
+    SeatAssignment:
+      type: object
+      properties:
+        party_id:
+          type: number
+        seats:
+          type: array
+          items:
+            type: string
     PaymentMethod:
       type: object
       properties:
