@@ -1,2 +1,3 @@
 *.ini
 *__pycache__/
+init_env.sh
