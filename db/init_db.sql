@@ -9,7 +9,7 @@ CREATE TABLE Parties (
 
 -- Seats table
 CREATE TABLE Seats (
-    SeatID VARCHAR(5) PRIMARY KEY,
+    SeatID VARCHAR(10) PRIMARY KEY,
     Floor INT NOT NULL,
     PosX INT NOT NULL,
     PosY INT NOT NULL,

@@ -22,7 +22,7 @@ class Party(db.Model):
 
 class Seat(db.Model):
     __tablename__ = 'seats'
-    seatid = db.Column(db.String(5), primary_key=True)
+    seatid = db.Column(db.String(10), primary_key=True)
     floor = db.Column(db.Integer, nullable=False)
     posx = db.Column(db.Integer, nullable=False)
     posy = db.Column(db.Integer, nullable=False)
