@@ -40,16 +40,11 @@
 .app-container {
   display: flex;
   transition: margin-left 0.3s;
-  margin-left: 60px;
-}
-
-.hamburgermenu-open .main-content {
-  margin-left: 250px; /* Adjust to the expanded width of the sidebar */
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
+  padding-top: 60px;
 }
 
 body {
@@ -61,3 +56,16 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
 }
+
+.home-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /*height: calc(100vh - 60px); /* Adjust height to account for the navbar height */
+  text-align: center;
+}
+
+.home-container h1 {
+  color: #341b06; /* Example using the HEX code for Tomato color */
+}
+
