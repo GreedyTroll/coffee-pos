@@ -11,12 +11,14 @@ const Navbar = ({ isAuthenticated }) => {
             <>
               <li className="navItem"><Link to="/home" className="navButton">Home</Link></li>
               <li className="navItem"><Link to="/menu" className="navButton">Menu</Link></li>
+              <li className="navItem"><Link to="/management" className="navButton">Management</Link></li>
               <li className="navItem"><Link to="/settings" className="navButton">Settings</Link></li>
             </>
           ) : (
             <>
               <li className="navItem"><Link to="/" className="navButton">Home</Link></li>
               <li className="navItem"><Link to="/menu" className="navButton">Menu</Link></li>
+              <li className="navItem"><Link to="/management" className="navButton">Management</Link></li>
               <li className="navItem"><Link to="/login" className="navButton">Login</Link></li>
             </>
           )}
