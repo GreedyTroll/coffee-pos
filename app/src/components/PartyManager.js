@@ -154,7 +154,7 @@ const PartyManager = () => {
         <div
           key={seat.seatid}
           onClick={() => handleSeatClick(seat.seatid)}
-          className={`seat ${seat.status}`}
+          className={`seat ${seat.status === 'vacant' ? 'vacant' : (seat.status === editingParty?.partyid ? 'blue' : 'red')}`}
           style={{
             top: seat.posx * seatSize,
             left: seat.posy * seatSize,
