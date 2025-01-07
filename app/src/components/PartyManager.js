@@ -73,7 +73,7 @@ const PartyManager = () => {
     } catch (error) {
       console.error('Error fetching seats', error);
     }
-  };  
+  };
 
   const handleEditParty = (party) => {
     setEditingParty(party);
@@ -124,7 +124,7 @@ const PartyManager = () => {
     if (seatIndex !== -1) {
       const updatedSeats = [...seats];
       const seat = updatedSeats[seatIndex];
-  
+
       if (seat.status === 'vacant' || seat.partyid === editingParty?.partyid) {
         if (seat.status === 'vacant') {
           seat.status = editingParty.partyid;
@@ -135,52 +135,46 @@ const PartyManager = () => {
           seat.partyid = null;
           setEditingPartySeats(editingPartySeats.filter(id => id !== seatId));
         }
-  
+
         setSeats(updatedSeats);
       }
     }
   };
-  
+
   const handleConfirmDeactivate = (partyId) => {
     setDeactivatePartyId(partyId);
   };
 
   const seatSize = 50; // Size of each seat box in pixels
+  const floors = [...new Set(seats.map(seat => seat.floor))]; // Get unique floor numbers
+
+  const renderSeats = (floor) => (
+    <div className="floor-container" key={floor}>
+      {seats.filter(seat => seat.floor === floor).map((seat) => (
+        <div
+          key={seat.seatid}
+          onClick={() => handleSeatClick(seat.seatid)}
+          className={`seat ${seat.status}`}
+          style={{
+            top: seat.posx * seatSize,
+            left: seat.posy * seatSize,
+          }}
+        >
+          <Paper className="seat-paper">
+            {`${seat.seatid}`}
+          </Paper>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div>
       <div className="route-title-container">
         <h1>Party Management</h1>
       </div>
-      <div style={{ position: 'relative', width: seatSize * 11, height: seatSize * 12 }}>
-        {seats.map((seat) => (
-          <div
-            key={seat.seatid}
-            onClick={() => handleSeatClick(seat.seatid)}
-            style={{
-              position: 'absolute',
-              top: seat.posx * seatSize,
-              left: seat.posy * seatSize,
-              cursor: 'pointer',
-              width: seatSize,
-              height: seatSize,
-            }}
-          >
-            <Paper
-              style={{
-                padding: '5px',
-                backgroundColor: seat.status === 'vacant' ? 'green' : (seat.status === editingParty?.partyid ? 'blue' : 'red'),
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {`${seat.seatid}`}
-            </Paper>
-          </div>
-        ))}
+      <div className="seating-container">
+        {floors.map(floor => renderSeats(floor))}
       </div>
       <TableContainer component={Paper}>
         <Table>
@@ -189,8 +183,6 @@ const PartyManager = () => {
               <TableCell>Party Size</TableCell>
               <TableCell>Notes</TableCell>
               <TableCell>Add Items</TableCell>
-              <TableCell>Total Price</TableCell>
-              <TableCell>Seat Assignment</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -210,8 +202,6 @@ const PartyManager = () => {
                   placeholder="Notes"
                 />
               </TableCell>
-              <TableCell />
-              <TableCell />
               <TableCell />
               <TableCell>
                 <Button onClick={handleCreateParty}>Add</Button>
@@ -242,8 +232,6 @@ const PartyManager = () => {
                 <TableCell onClick={() => handleEditParty(party)}>
                   <Button onClick={() => console.log('Add Items')}>Add Items</Button>
                 </TableCell>
-                <TableCell onClick={() => handleEditParty(party)}>{party.totalprice}</TableCell>
-                <TableCell onClick={() => handleEditParty(party)}>{party.seatassignment}</TableCell>
                 <TableCell>
                   {editingParty?.partyid === party.partyid ? (
                     <Button onClick={handleSaveParty}>Save</Button>
