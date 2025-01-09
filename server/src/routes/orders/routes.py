@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Order, OrderItem, Item
+from common.models import db, Order, OrderItem, Item, OrderDetail
 from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timezone, timedelta
@@ -19,33 +19,31 @@ def orders():
     amount_max = request.args.get('amount_max')
     date_start = request.args.get('date_start')
     date_end = request.args.get('date_end')
+    fulfilled = request.args.get('fulfilled')
 
-    query = Order.query
+    query = OrderDetail.query
 
     if not paid:
-        query = query.filter(Order.paidtime.is_(None))
+        query = query.filter(OrderDetail.paidtime.is_(None))
     elif paid == 'paid':
-        query = query.filter(Order.paidtime.isnot(None))
+        query = query.filter(OrderDetail.paidtime.isnot(None))
     if amount_min:
-        query = query.filter(Order.totalamount >= float(amount_min))
+        query = query.filter(OrderDetail.totalamount >= float(amount_min))
     if amount_max:
-        query = query.filter(Order.totalamount <= float(amount_max))
+        query = query.filter(OrderDetail.totalamount <= float(amount_max))
     if date_start:
-        query = query.filter(Order.orderdate >= datetime.strptime(date_start, '%Y-%m-%d'))
+        query = query.filter(OrderDetail.orderdate >= datetime.strptime(date_start, '%Y-%m-%d'))
     else:
-        today = datetime.now(tz=timezone(timedelta(hours=8))).date()
-        query = query.filter(Order.orderdate >= today)
+        today = datetime.now(tz=timezone(timedelta(hours=8))).replace(hour=0, minute=0, second=0, microsecond=0)
+        query = query.filter(OrderDetail.orderdate >= today)
     if date_end:
-        query = query.filter(Order.orderdate <= datetime.strptime(date_end, '%Y-%m-%d'))
+        query = query.filter(OrderDetail.orderdate <= datetime.strptime(date_end, '%Y-%m-%d'))
+    if not fulfilled:
+        query = query.filter(OrderDetail.preparing == True)
 
-    orders = query.outerjoin(OrderItem, Order.orderid == OrderItem.orderid).all()
-    orders_dict = []
-    for order in orders:
-        order_dict = model_to_dict(order)
-        order_items = OrderItem.query.filter_by(orderid=order.orderid).all()
-        order_dict['items'] = [model_to_dict(item) for item in order_items]
-        orders_dict.append(order_dict)
-    print(orders_dict)
+    orders = query.all()
+    orders_dict = [model_to_dict(order) for order in orders]
+    
     return jsonify(orders_dict)
 
 @orders_bp.route('/new/<int:party_id>', methods=['POST'])
@@ -65,7 +63,7 @@ def newOrder(party_id):
         new_order = Order(
             partyid=party_id,
             paymentmethod=data['payment_method'],
-            paidtime=datetime.now() if data.get('paid') else None,
+            paidtime=datetime.now(tz=timezone(timedelta(hours=8))) if data.get('paid') else None,
             ordertype=data['order_type']
         )
         db.session.add(new_order)
@@ -155,7 +153,7 @@ def markDelivered(orderitem_id):
         return {'error': "Order id not found"}, 404
 
     try:
-        orderitem.delivered = True
+        orderitem.delivered = not orderitem.delivered
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
