@@ -146,7 +146,7 @@ const PartyManager = () => {
   };
 
   const seatSize = 4; // Size of each seat box in pixels
-  const floors = [...new Set(seats.map(seat => seat.floor))]; // Get unique floor numbers
+  const floors = [...new Set(seats.map(seat => seat.floor))].sort(); // Get unique floor numbers
 
   const renderSeats = (floor) => (
     <div className="floor-container" key={floor}>
@@ -156,7 +156,7 @@ const PartyManager = () => {
           onClick={() => handleSeatClick(seat.seatid)}
           className={`seat ${seat.status === 'vacant' ? 'vacant' : (seat.status === editingParty?.partyid ? 'blue' : 'red')}`}
           style={{
-            top: `${2 * seat.posx * seatSize}vh`,
+            top: `${seat.posx * seatSize}vh`,
             left: `${seat.posy * seatSize}vw`,
           }}
         >
