@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import './App.css';
 import Menu from './components/Menu';
-import PartyManager from './components/PartyManager'
+import PartyManager from './components/PartyManager';
+import Order from './components/Order';
 
 // Define the Home component
 const Home = () => (
@@ -24,6 +25,7 @@ function App () {
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<Menu />} />
             <Route path="/management" element={<PartyManager />} />
+            <Route path="/orders" element={<Order />} />
             {/*<Route path="/seats" element={<ProtectedRoute component={SeatsTable} />} />
             <Route path="/employees" element={<ProtectedRoute component={EmployeesTable} />} />
             */}
