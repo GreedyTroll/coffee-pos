@@ -1,3 +1,6 @@
 *.ini
 *__pycache__/
 init_env.sh
+*node_modules/
+*package-lock.json
+*venv/

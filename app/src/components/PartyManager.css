@@ -1,0 +1,59 @@
+/* PartyManager.css */
+.seating-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap; /* Allow wrapping to handle smaller screens */
+  width: 100%;
+  height: 50vh; /* Adjust height based on your needs */
+  overflow: auto; /* Add scroll if content overflows */
+}
+
+.floor-container {
+  position: relative;
+  width: 30vw; /* Relative width */
+  height: 45vh; /* Relative height */
+  border: 1px solid #ccc;
+  margin: 10px;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.editable-row {
+  cursor: pointer;
+}
+
+.editing-row {
+  background-color: #f0f8ff;
+}
+
+.deactivate-row {
+  background-color: #ffe6e6;
+}
+
+.seat {
+  position: absolute;
+  cursor: pointer;
+  width: 5vw; /* Adjust width based on your needs */
+  height: 3vh; /* Adjust height based on your needs */
+}
+
+.seat-paper {
+  padding: 5px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seat.vacant .seat-paper {
+  background-color: green;
+}
+
+.seat.blue .seat-paper {
+  background-color: blue;
+}
+
+.seat.red .seat-paper {
+  background-color: red;
+}

@@ -33,7 +33,7 @@ def addParty():
     
     try:
         new_party = Party(
-            partysize=data['party_size'],
+            partysize=data['partysize'],
             notes=data['notes']
         )
     
@@ -47,6 +47,37 @@ def addParty():
     return {'success': True, 'party_id': new_party.partyid}, 200
 
 @parties_bp.route('/<int:id>', methods=['PUT'])
+def updateParty(id):
+    if not id:
+        return {'error': 'no id provided'}, 400
+    
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+
+    if not data:
+        return {'error': 'no data provided'}, 400
+
+    party = Party.query.get(id)
+    if not party:
+        return {'error': "party id not found"}, 404
+
+    try:
+        if 'partysize' in data:
+            party.partysize = data['partysize']
+        if 'notes' in data:
+            party.notes = data['notes']
+        
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.info(f'Error occurred: {e}')
+        return {'Error': f'{e}'}, 500
+
+    return {'success': True}, 200
+
+@parties_bp.route('/<int:id>', methods=['DELETE'])
 def deactivateParty(id):
     if not id:
         return {'error': 'no id provided'}, 400
@@ -75,36 +106,32 @@ def deactivateParty(id):
 
     return {'success': True, 'released_seats': json.dumps(released_seats)}, 200
 
-@parties_bp.route('/assignSeats', methods=['POST'])
-def assignSeats():
-    if request.is_json:
-        data = request.get_json()
-    else:
-        data = request.form.to_dict()
-    
-    # validate request data
-    if data is None:
-        return {"message": 'no data received'}, 400
-    
-    if not data['party_id']:
-        return {"message": 'party id not provided'}, 400
+@parties_bp.route('/assignSeats/<int:party_id>', methods=['POST','PUT'])
+def assignSeats(party_id):
+    if not party_id:
+        return {'error': 'no party id provided'}, 400
 
-    party = Party.query.get(data['party_id'])
-    if party is None:
-        return {"message": 'party not found'}, 400
-    
-    if not data['seats']:
-        return {"message": 'seats not provided'}, 400
+    party = Party.query.get(party_id)
+    if not party:
+        return {'error': "party id not found"}, 404
+
+    data = request.get_json()
+    seat_ids = data.get('seat_ids', [])
+
     try:
-        for seat_id in data['seats']:
+        # Unassign all current seats
+        Seat.query.filter_by(partyid=party_id).update({'partyid': None})
+        db.session.commit()
+
+        # Assign new seats
+        for seat_id in seat_ids:
             seat = Seat.query.get(seat_id)
-            if seat is None:
-                return {"message": 'invalid seat id {}'.format(seat_id)}, 400
-            seat.partyid = party.partyid
-            db.session.flush()
+            if seat and seat.partyid is None:
+                seat.partyid = party_id
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
         logger.info(f'Error occurred: {e}')
         return {'Error': f'{e}'}, 500
-    return {"success": True}, 200
+
+    return {'success': True}, 200

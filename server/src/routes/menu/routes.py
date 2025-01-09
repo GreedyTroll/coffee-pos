@@ -11,9 +11,9 @@ menu_bp = Blueprint('menu', __name__)
 
 @menu_bp.route('',methods=['GET'])
 def menu():
-    query = (
-        db.session.query(Category, Item)
-        .join(Item, Category.categoryid == Item.categoryid) 
+    query = ( 
+        db.session.query(Category, Item) 
+        .outerjoin(Item, Category.categoryid == Item.categoryid) # Use outer join to include categories without products 
         .order_by(Category.menuorder, Item.menuorder) .all()
     )
     menu = []
@@ -21,8 +21,9 @@ def menu():
     for category, item in query:
         if category.categoryname != prev_cat_name:
             menu.append(model_to_dict(category))
-        prev_cat_name = category.categoryname
-        menu.append(model_to_dict(item))
+            prev_cat_name = category.categoryname
+        if item and not item.isdeleted:
+            menu.append(model_to_dict(item))
 
     return jsonify(menu)
 
@@ -37,19 +38,28 @@ def addItem():
     if data is None:
         return {"message": 'no data received'}, 400
     
+    if not 'categoryid' in data and not 'category' in data:
+        return {"message": "category not provided"}, 400
+
     try:
-        category = Category.query.filter_by(categoryname=data['category']).first()
+        if 'categoryid' in data:
+            category = Category.query.get(data['categoryid'])
+        elif 'category' in data:
+            category = Category.query.filter_by(categoryname=data['category']).first()    
         if not category:
-            category = Category(categoryname=data['category'])
+            if 'category' in data:
+                category = Category(categoryname=data['category'])
             db.session.add(category)
             db.session.flush() # sends the current state of the session to the database, but it does not commit the transaction
         
         data['categoryid'] = category.categoryid
+        
+        # Replace null values with defaults if keys are not present in data
         new_item = Item(
-            productname=data['product_name'],
-            menuorder=data['menu_order'],
-            description=data['description'],
-            price=int(data['price']),
+            productname=data.get('product_name', 'Unknown Product'),
+            menuorder=data.get('menu_order', 0),
+            description=data.get('description', ''),
+            price=int(data.get('price', 0)),
             categoryid=category.categoryid
         )
     
