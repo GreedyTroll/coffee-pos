@@ -26,8 +26,7 @@ class Seat(db.Model):
     posx = db.Column(db.Integer, nullable=False)
     posy = db.Column(db.Integer, nullable=False)
     partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'), nullable=True)
-    # istaken = db.Column(db.Boolean, default=False)
-
+    
 class Employee(db.Model):
     __tablename__ = 'employees'
     employeeid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -54,7 +53,7 @@ class Item(db.Model):
     categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
     isdeleted = db.Column(db.Boolean, default=False)
     createdat = db.Column(db.DateTime, default=func.now())
-
+    
 class Discount(db.Model):
     __tablename__ = 'discounts'
     discountid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -86,3 +85,16 @@ class OrderItem(db.Model):
     productid = db.Column(db.Integer, db.ForeignKey('items.productid'))
     quantity = db.Column(db.Integer)
     delivered = db.Column(db.Boolean, default=False)
+
+class OrderDetail(db.Model):
+    __tablename__ = 'orderdetails'
+    orderid = db.Column(db.Integer, primary_key=True)
+    partyid = db.Column(db.Integer)
+    employeeid = db.Column(db.Integer)
+    orderdate = db.Column(db.DateTime)
+    totalamount = db.Column(db.Numeric(10, 2))
+    paymentmethod = db.Column(db.String(20))
+    paidtime = db.Column(db.DateTime)
+    ordertype = db.Column(db.String(20))
+    items = db.Column(db.JSON)
+    preparing = db.Column(db.Boolean)
