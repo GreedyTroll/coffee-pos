@@ -11,7 +11,7 @@ const MenuSection = ({ category, products, isEditMode, handleProductChange, addP
                     {products.map((product, index) => (
                         <tr key={index}>
                             <td>{product.productname || product.product_name ||"No Product Name"}</td>
-                            <td>{product.description || "No Description"}</td>
+                            <td>{product.description || ""}</td>
                             <td>{product.price ? `${Math.round(product.price)}` : 0}</td>
                             {isEditMode && <td>{product.menuorder || product.menu_order}</td>}
                             {isEditMode && (
