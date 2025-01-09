@@ -72,6 +72,9 @@ CREATE TABLE Orders (
     EmployeeID INT,
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     TotalAmount DECIMAL(10, 2),
+    PaymentMethod VARCHAR(20),
+    PaidTime TIMESTAMP,
+    OrderType VARCHAR(20),
     FOREIGN KEY (PartyID) REFERENCES Parties(PartyID),
     FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID)
 );
@@ -82,7 +85,7 @@ CREATE TABLE OrderItems (
     OrderID INT,
     ProductID INT,
     Quantity INT,
-    Price DECIMAL(10, 2),
+    Delivered Boolean DEFAULT FALSE,
     FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Items(ProductID)
 );

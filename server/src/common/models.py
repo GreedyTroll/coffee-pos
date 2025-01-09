@@ -1,6 +1,5 @@
 from enum import Enum
 from sqlalchemy.sql import func
-# from datetime import datetime
 from app import db
 
 def model_to_dict(model):
@@ -76,7 +75,9 @@ class Order(db.Model):
     employeeid = db.Column(db.Integer, db.ForeignKey('employees.employeeid'))
     orderdate = db.Column(db.DateTime, default=func.now())
     totalamount = db.Column(db.Numeric(10, 2))
-    notes = db.Column(db.Text)
+    paymentmethod = db.Column(db.String(20))
+    paidtime = db.Column(db.DateTime)
+    ordertype = db.Column(db.String(20))
 
 class OrderItem(db.Model):
     __tablename__ = 'orderitems'
@@ -84,4 +85,4 @@ class OrderItem(db.Model):
     orderid = db.Column(db.Integer, db.ForeignKey('orders.orderid'))
     productid = db.Column(db.Integer, db.ForeignKey('items.productid'))
     quantity = db.Column(db.Integer)
-    price = db.Column(db.Numeric(10, 2))
+    delivered = db.Column(db.Boolean, default=False)
