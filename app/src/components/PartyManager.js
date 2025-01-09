@@ -145,7 +145,7 @@ const PartyManager = () => {
     setDeactivatePartyId(partyId);
   };
 
-  const seatSize = 50; // Size of each seat box in pixels
+  const seatSize = 4; // Size of each seat box in pixels
   const floors = [...new Set(seats.map(seat => seat.floor))]; // Get unique floor numbers
 
   const renderSeats = (floor) => (
@@ -156,8 +156,8 @@ const PartyManager = () => {
           onClick={() => handleSeatClick(seat.seatid)}
           className={`seat ${seat.status === 'vacant' ? 'vacant' : (seat.status === editingParty?.partyid ? 'blue' : 'red')}`}
           style={{
-            top: seat.posx * seatSize,
-            left: seat.posy * seatSize,
+            top: `${2 * seat.posx * seatSize}vh`,
+            left: `${seat.posy * seatSize}vw`,
           }}
         >
           <Paper className="seat-paper">
