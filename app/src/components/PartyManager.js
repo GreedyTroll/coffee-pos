@@ -1,7 +1,8 @@
 import useAxios from '../hooks/useAxios';
 import React, { useState, useEffect, useRef } from 'react';
 import './PartyManager.css';
-import './Route.css'
+import './Route.css';
+import Order from './Order';
 import {
   Table,
   TableBody,
@@ -168,6 +169,18 @@ const PartyManager = () => {
     </div>
   );
 
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [selectedPartyId, setSelectedPartyId] = useState(null);
+
+  const togglePopup = (partyId = null) => {
+    setSelectedPartyId(partyId);
+    setIsPopupVisible(!isPopupVisible);
+  };
+
+  const handleOrderSent = () => {
+    setIsPopupVisible(false);
+  };
+
   return (
     <div>
       <div className="route-title-container">
@@ -229,8 +242,8 @@ const PartyManager = () => {
                     disabled={editingParty?.partyid !== party.partyid}
                   />
                 </TableCell>
-                <TableCell onClick={() => handleEditParty(party)}>
-                  <Button onClick={() => console.log('Add Items')}>Add Items</Button>
+                <TableCell>
+                  <Button onClick={() => togglePopup(party.partyid)}>Order</Button>
                 </TableCell>
                 <TableCell>
                   {editingParty?.partyid === party.partyid ? (
@@ -246,6 +259,14 @@ const PartyManager = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {isPopupVisible && (
+        <div className="popup-container">
+          <div className="popup-content">
+            <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
+            <Button onClick={togglePopup}>Close</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
