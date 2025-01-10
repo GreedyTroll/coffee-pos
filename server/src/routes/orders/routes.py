@@ -80,7 +80,7 @@ def newOrder(party_id):
                 quantity=item['quantity']
             )
             db.session.add(order_item)
-            total += item['quantity'] * product.price
+            total += int(item['quantity']) * int(product.price)
         
         new_order.totalamount = total
         
@@ -133,7 +133,7 @@ def updateOrder(id):
                     quantity=item['quantity']
                 )
                 db.session.add(order_item)
-                total += item['quantity'] * product.price
+                total += item['quantity'] * int(product.price)
             order.totalamount = total  
         db.session.commit()
     except SQLAlchemyError as e:
