@@ -1,84 +1,103 @@
-import useAxios from '../hooks/useAxios';
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { FaTrash } from 'react-icons/fa';
+import './Order.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
+const OrderComponent = ({ partyId, onOrderSent }) => {
+  const [menu, setMenu] = useState([]);
+  const [order, setOrder] = useState([]);
+  const [activeTab, setActiveTab] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedItem, setSelectedItem] = useState(null);
 
+  useEffect(() => {
+    axios.get(`${apiUrl}/menu`)
+      .then(response => {
+        setMenu(response.data);
+        setActiveTab(response.data[0]?.categoryid);
+      })
+      .catch(error => console.error('Error fetching menu:', error));
+  }, []);
 
-const Order = () => {
-    const axios = useAxios();
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+  };
 
-    const [orders, setOrders] = useState([]);
+  const handleConfirm = () => {
+    setOrder([...order, { product_id: selectedItem.productid, product_name: selectedItem.productname, quantity }]);
+    setSelectedItem(null);
+    setQuantity(1);
+  };
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await axios.get(`${apiUrl}/orders`);
-                setOrders(response.data);
-            } catch (error) {
-                console.error('Error fetching orders:', error);
-            }
-        };
+  const handleSendOrder = () => {
+    axios.post(`${apiUrl}/orders/new/${partyId}`, {
+      payment_method: 'LinePay',
+      order_type: 'Dine-in',
+      items: order
+    })
+    .then(response => {
+      console.log('Order sent:', response);
+      onOrderSent();
+    })
+    .catch(error => console.error('Error sending order:', error));
+  };
 
-        fetchOrders();
-    }, []);
+  const handleRemoveItem = (index) => {
+    setOrder(order.filter((_, i) => i !== index));
+  };
 
-    // Sort orders by orderdate
-    const sortedOrders = orders.sort((a, b) => new Date(a.orderdate) - new Date(b.orderdate));
+  const categories = [...new Set(menu.map(item => item.categoryid))];
 
-    const handlePreparedChange = async (orderId, orderItemId, prepared) => {
-        try {
-            await axios.put(`${apiUrl}/orders/delivered/${orderItemId}`);
-            setOrders(prevOrders =>
-                prevOrders.map(order =>
-                    order.orderid === orderId
-                        ? {
-                              ...order,
-                              items: order.items.map(item =>
-                                  item.OrderItemID === orderItemId ? { ...item, prepared } : item
-                              ),
-                          }
-                        : order
-                )
-            );
-        } catch (error) {
-            console.error('Error updating item preparation status:', error);
-        }
-    };
-
-    return (
-        <div>
-            {sortedOrders.map(order => (
-                <div key={order.orderid} style={{ display: 'inline-block', margin: '10px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}>
-                    <h3>Order Date: {new Date(order.orderdate).toLocaleString()}</h3>
-                    <p>Order Type: {order.ordertype}</p>
-                    <p>Payment Method: {order.paymentmethod}</p>
-                    <p>Total Amount: {Number(order.totalamount).toFixed(0)}</p>
-                    <ul>
-                        {order.items.map(item => (
-                            <li key={item.OrderItemID}>
-                                <span>{item.ProductName} - {item.Quantity}</span>
-                                <button
-                                    style={{
-                                        marginLeft: '10px',
-                                        padding: '5px 10px',
-                                        backgroundColor: item.prepared ? 'green' : 'red',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '3px',
-                                        cursor: 'pointer'
-                                    }}
-                                    onClick={() => handlePreparedChange(order.orderid, item.OrderItemID, !item.prepared)}
-                                >
-                                    {item.prepared ? 'Prepared' : 'Not Prepared'}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            ))}
+  return (
+    <div className="order-component">
+      <div className="order-summary">
+        <h3>Order Summary</h3>
+        <ul>
+          {order.map((item, index) => (
+            <li key={index}>
+              {item.product_name} - {item.quantity}
+              <FaTrash className="trash-icon" onClick={() => handleRemoveItem(index)} />
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="order-content">
+        <div className="tabs">
+          {categories.map(categoryId => (
+            <button
+              key={categoryId}
+              className={`tab ${activeTab === categoryId ? 'active' : ''}`}
+              onClick={() => setActiveTab(categoryId)}
+            >
+              {menu.find(item => item.categoryid === categoryId)?.categoryname}
+            </button>
+          ))}
         </div>
-    );
+        <div className="items">
+          {menu.filter(item => item.categoryid === activeTab && item.productid).map(item => (
+            <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
+              {item.productname} - ${item.price}
+            </div>
+          ))}
+        </div>
+        {selectedItem && (
+          <div className="popup">
+            <h3>{selectedItem.productname}</h3>
+            <input
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              min="1"
+            />
+            <button onClick={handleConfirm}>Confirm</button>
+          </div>
+        )}
+        <button className="send-button" onClick={handleSendOrder}>Send Order</button>
+      </div>
+    </div>
+  );
 };
 
-export default Order;
+export default OrderComponent;

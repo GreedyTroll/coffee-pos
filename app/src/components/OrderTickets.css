@@ -1,0 +1,13 @@
+.button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.button.prepared {
+    background-color: green;
+}
