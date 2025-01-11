@@ -48,6 +48,13 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     setOrder(order.filter((_, i) => i !== index));
   };
 
+  const calculateTotalPrice = () => {
+    return order.reduce((total, item) => {
+      const menuItem = menu.find(menuItem => menuItem.productid === item.product_id);
+      return total + (menuItem ? menuItem.price * item.quantity : 0);
+    }, 0);
+  };
+
   const categories = [...new Set(menu.map(item => item.categoryid))];
 
   return (
@@ -62,6 +69,9 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
             </li>
           ))}
         </ul>
+        <div className="total-price">
+          Total: ${calculateTotalPrice().toFixed(0)}
+        </div>
       </div>
       <div className="order-content">
         <div className="tabs">
@@ -78,7 +88,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         <div className="items">
           {menu.filter(item => item.categoryid === activeTab && item.productid).map(item => (
             <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
-              {item.productname} - ${item.price}
+              {item.productname}  ${Math.round(item.price)}
             </div>
           ))}
         </div>
