@@ -22,13 +22,16 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   }, []);
 
   const handleItemClick = (item) => {
-    setSelectedItem(item);
-  };
-
-  const handleConfirm = () => {
-    setOrder([...order, { product_id: selectedItem.productid, product_name: selectedItem.productname, quantity }]);
-    setSelectedItem(null);
-    setQuantity(1);
+    setOrder(prevOrder => {
+      const existingItemIndex = prevOrder.findIndex(orderItem => orderItem.product_id === item.productid);
+      if (existingItemIndex !== -1) {
+        const updatedOrder = [...prevOrder];
+        updatedOrder[existingItemIndex].quantity += 1;
+        return updatedOrder;
+      } else {
+        return [...prevOrder, { product_id: item.productid, product_name: item.productname, quantity: 1 }];
+      }
+    });
   };
 
   const handleSendOrder = () => {
@@ -48,6 +51,24 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     setOrder(order.filter((_, i) => i !== index));
   };
 
+  const handleIncreaseQuantity = (index) => {
+    setOrder(prevOrder => {
+      const updatedOrder = [...prevOrder];
+      updatedOrder[index].quantity += 1;
+      return updatedOrder;
+    });
+  };
+
+  const handleDecreaseQuantity = (index) => {
+    setOrder(prevOrder => {
+      const updatedOrder = [...prevOrder];
+      if (updatedOrder[index].quantity > 1) {
+        updatedOrder[index].quantity -= 1;
+      }
+      return updatedOrder;
+    });
+  };
+
   const calculateTotalPrice = () => {
     return order.reduce((total, item) => {
       const menuItem = menu.find(menuItem => menuItem.productid === item.product_id);
@@ -65,6 +86,8 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
           {order.map((item, index) => (
             <li key={index}>
               {item.product_name} - {item.quantity}
+              <button className="quantity-button" onClick={() => handleDecreaseQuantity(index)}>-</button>
+              <button className="quantity-button" onClick={() => handleIncreaseQuantity(index)}>+</button>
               <FaTrash className="trash-icon" onClick={() => handleRemoveItem(index)} />
             </li>
           ))}
@@ -92,18 +115,6 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
             </div>
           ))}
         </div>
-        {selectedItem && (
-          <div className="popup">
-            <h3>{selectedItem.productname}</h3>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              min="1"
-            />
-            <button onClick={handleConfirm}>Confirm</button>
-          </div>
-        )}
         <button className="send-button" onClick={handleSendOrder}>Send Order</button>
       </div>
     </div>

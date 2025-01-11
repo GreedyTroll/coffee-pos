@@ -27,6 +27,7 @@
 
 .tabs {
   display: flex;
+  flex-wrap: wrap; /* Allow tabs to wrap into multiple rows */
   margin-bottom: 20px;
 }
 
@@ -34,7 +35,7 @@
   padding: 10px;
   cursor: pointer;
   border: 1px solid #ccc;
-  margin-right: 5px;
+  margin: 5px; /* Add margin to separate tabs */
 }
 
 .tab.active {
@@ -77,4 +78,18 @@
 .trash-icon {
   cursor: pointer;
   color: red;
+}
+
+.quantity-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.quantity-button:hover {
+  background-color: #0056b3;
 }
