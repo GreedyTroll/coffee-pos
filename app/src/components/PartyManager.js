@@ -263,7 +263,9 @@ const PartyManager = () => {
         <div className="popup-container">
           <div className="popup-content">
             <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
-            <Button onClick={togglePopup}>Close</Button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button onClick={togglePopup}>Close</Button>
+            </div>
           </div>
         </div>
       )}
