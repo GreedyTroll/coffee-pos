@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Order, OrderItem, Item, OrderDetail
+from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod
 from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timezone, timedelta
@@ -161,3 +161,9 @@ def markDelivered(orderitem_id):
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
+
+@orders_bp.route('/paymentmethods', methods=['GET'])
+def getPaymentMethods():
+    payment_methods = PaymentMethod.query.all()
+    payment_methods_dict = [payment_method.methodname for payment_method in payment_methods]
+    return jsonify(payment_methods_dict)
