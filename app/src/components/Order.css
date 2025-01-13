@@ -101,3 +101,39 @@
 .quantity-button:hover {
   background-color: #0056b3;
 }
+
+.payment-method {
+  margin-bottom: 20px;
+}
+
+.payment-method label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.payment-method select {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.payment-method select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.order-type {
+  margin-bottom: 20px;
+}
+
+.order-type label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.order-type input[type="radio"] {
+  margin-right: 5px;
+}

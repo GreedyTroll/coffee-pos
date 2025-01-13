@@ -9,6 +9,9 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const [menu, setMenu] = useState([]);
   const [order, setOrder] = useState([]);
   const [activeTab, setActiveTab] = useState(null);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+  const [orderType, setOrderType] = useState('Dine-in');
 
   useEffect(() => {
     axios.get(`${apiUrl}/menu`)
@@ -17,6 +20,13 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         setActiveTab(response.data[0]?.categoryid);
       })
       .catch(error => console.error('Error fetching menu:', error));
+
+    axios.get(`${apiUrl}/orders/paymentmethods`)
+      .then(response => {
+        setPaymentMethods(response.data);
+        setSelectedPaymentMethod(response.data[0]);
+      })
+      .catch(error => console.error('Error fetching payment methods:', error));
   }, []);
 
   const handleItemClick = (item) => {
@@ -34,8 +44,8 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
 
   const handleSendOrder = () => {
     axios.post(`${apiUrl}/orders/new/${partyId}`, {
-      payment_method: 'LinePay',
-      order_type: 'Dine-in',
+      payment_method: selectedPaymentMethod,
+      order_type: orderType,
       items: order
     })
     .then(response => {
@@ -80,6 +90,38 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     <div className="order-component">
       <div className="order-summary">
         <h3>Order Summary</h3>
+        <div className="payment-method">
+          <label htmlFor="payment-method">Payment Method </label>
+          <select
+            id="payment-method"
+            value={selectedPaymentMethod}
+            onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+          >
+            {paymentMethods.map((method, index) => (
+              <option key={index} value={method}>{method}</option>
+            ))}
+          </select>
+        </div>
+        <div className="order-type">
+          <label>
+            <input
+              type="radio"
+              value="Dine-in"
+              checked={orderType === 'Dine-in'}
+              onChange={(e) => setOrderType(e.target.value)}
+            />
+            Dine-in
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="Take-out"
+              checked={orderType === 'Take-out'}
+              onChange={(e) => setOrderType(e.target.value)}
+            />
+            Take-out
+          </label>
+        </div>
         <ul>
           {order.map((item, index) => (
             <li key={index}>
