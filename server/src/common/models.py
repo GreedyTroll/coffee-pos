@@ -67,6 +67,10 @@ class DiscountCombination(db.Model):
     categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
     quantity = db.Column(db.Integer)
 
+class PaymentMethod(db.Model):
+    __tablename__ = 'paymentmethods'
+    methodname = db.Column(db.String(20), primary_key=True)
+
 class Order(db.Model):
     __tablename__ = 'orders'
     orderid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -74,7 +78,7 @@ class Order(db.Model):
     employeeid = db.Column(db.Integer, db.ForeignKey('employees.employeeid'))
     orderdate = db.Column(db.DateTime, default=func.now())
     totalamount = db.Column(db.Numeric(10, 2))
-    paymentmethod = db.Column(db.String(20))
+    paymentmethod = db.Column(db.String(20), db.ForeignKey('paymentmethods.methodname'))
     paidtime = db.Column(db.DateTime)
     ordertype = db.Column(db.String(20))
 

@@ -65,6 +65,11 @@ CREATE TABLE DiscountCombinations(
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
 
+-- Payment methods table
+CREATE TABLE PaymentMethods (
+    MethodName VARCHAR(20) PRIMARY KEY
+);
+
 -- Orders table
 CREATE TABLE Orders (
     OrderID SERIAL PRIMARY KEY,
@@ -76,7 +81,8 @@ CREATE TABLE Orders (
     PaidTime TIMESTAMP,
     OrderType VARCHAR(20),
     FOREIGN KEY (PartyID) REFERENCES Parties(PartyID),
-    FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID)
+    FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID),
+    FOREIGN KEY (PaymentMethod) REFERENCES PaymentMethods(MethodName)
 );
 
 -- OrderItems table
