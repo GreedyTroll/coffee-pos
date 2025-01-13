@@ -56,22 +56,26 @@ const OrderTickets = () => {
     };
 
     return (
-        <div>
+        <div className="order-tickets-container">
             {sortedOrders.map(order => (
-                <div key={order.orderid} style={{ display: 'inline-block', margin: '10px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}>
-                    <h3>Order Date: {new Date(order.orderdate).toLocaleString()}</h3>
+                <div
+                    key={order.orderid}
+                    className={`order-ticket ${order.ordertype === 'Take-out' ? 'take-out' : ''}`}
+                    style={{ display: 'inline-block', margin: '10px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
+                >
+                    <h3>{new Date(order.orderdate).toLocaleTimeString()}</h3>
                     <p>Order Type: {order.ordertype}</p>
                     <p>Payment Method: {order.paymentmethod}</p>
                     <p>Total Amount: {Number(order.totalamount).toFixed(0)}</p>
                     <ul>
                         {order.items.map(item => (
-                            <li key={item.OrderItemID}>
+                            <li key={item.OrderItemID} style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span>{item.ProductName} - {item.Quantity}</span>
                                 <button
                                     className={`button ${item.prepared ? 'prepared' : ''}`}
                                     onClick={() => handlePreparedChange(order.orderid, item.OrderItemID, !item.prepared)}
                                 >
-                                    {item.prepared ? 'Prepared' : 'Not Prepared'}
+                                    {item.prepared ? 'Prepared' : 'Preparing...'}
                                 </button>
                             </li>
                         ))}

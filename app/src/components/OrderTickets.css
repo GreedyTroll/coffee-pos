@@ -1,13 +1,52 @@
+.order-tickets-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start; /* Align tickets at the top */
+  gap: 10px; /* Add space between tickets */
+}
+
+.order-ticket {
+  display: inline-block;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 200px;
+  background-color: rgba(255, 255, 255, 0.4); /* Semi-transparent white background */
+}
+
+.order-ticket.take-out {
+  background-color: rgba(173, 216, 230, 0.4); /* Light blue background for take-out orders */
+}
+
+.order-ticket ul {
+  list-style-type: none; /* Remove list item markers */
+  padding: 0;
+}
+
+.order-ticket li {
+  display: flex;
+  justify-content: space-between; /* Align content to the sides */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .button {
-    margin-left: 10px;
-    padding: 5px 10px;
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
 }
 
 .button.prepared {
-    background-color: green;
+  background-color: green;
+}
+
+.button.discard {
+  background-color: green; /* Change color to green */
+  display: block;
+  margin: 10px auto 0; /* Center horizontally */
 }
