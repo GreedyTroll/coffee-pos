@@ -46,8 +46,8 @@ def orders():
     
     return jsonify(orders_dict)
 
-@orders_bp.route('/new/<int:party_id>', methods=['POST'])
-def newOrder(party_id):
+@orders_bp.route('/new', methods=['POST'])
+def newOrder():
     if request.is_json:
         data = request.get_json()
     else:
@@ -61,7 +61,7 @@ def newOrder(party_id):
 
     try:
         new_order = Order(
-            partyid=party_id,
+            partyid= data['party_id'] if data.get('party_id') else None,
             paymentmethod=data['payment_method'],
             paidtime=datetime.now(tz=timezone(timedelta(hours=8))) if data.get('paid') else None,
             ordertype=data['order_type']
