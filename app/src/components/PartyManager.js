@@ -1,15 +1,9 @@
 import useAxios from '../hooks/useAxios';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './PartyManager.css';
 import './Route.css';
 import Order from './Order';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   TextField,
   Button
@@ -24,35 +18,15 @@ const PartyManager = () => {
   const [editingPartySeats, setEditingPartySeats] = useState([]);
   const [newParty, setNewParty] = useState({ partysize: '', notes: '' });
   const [deactivatePartyId, setDeactivatePartyId] = useState(null);
-  const editingPartyRef = useRef(editingParty);
-  const deactivatePartyRef = useRef(deactivatePartyId);
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [selectedSeat, setSelectedSeat] = useState(null);
 
   const axios = useAxios();
 
   useEffect(() => {
     fetchParties();
     fetchSeats();
-
-    const handleClickOutside = (event) => {
-      if (deactivatePartyRef.current && !event.target.closest('.deactivate-row')) {
-        setDeactivatePartyId(null);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [deactivatePartyId]);
-
-  useEffect(() => {
-    editingPartyRef.current = editingParty;
-  }, [editingParty]);
-
-  useEffect(() => {
-    deactivatePartyRef.current = deactivatePartyId;
-  }, [deactivatePartyId]);
+  }, []);
 
   const fetchParties = async () => {
     try {
@@ -68,11 +42,56 @@ const PartyManager = () => {
       const response = await axios.get(`${apiUrl}/seats`);
       const updatedSeats = response.data.map(seat => ({
         ...seat,
-        status: seat.partyid ? seat.partyid : 'vacant'
+        status: seat.partyid ? 'occupied' : 'vacant'
       }));
       setSeats(updatedSeats);
     } catch (error) {
       console.error('Error fetching seats', error);
+    }
+  };
+
+  const handleSeatClick = (seatId) => {
+    const seatIndex = seats.findIndex(seat => seat.seatid === seatId);
+    if (seatIndex !== -1) {
+      const updatedSeats = [...seats];
+      const seat = updatedSeats[seatIndex];
+
+      if (editingParty) {
+        // In edit mode
+        if (seat.partyid === editingParty.partyid) {
+          // Deselect seat only if more than one seat is assigned
+          if (editingPartySeats.length > 1) {
+            seat.partyid = null;
+            setEditingPartySeats(editingPartySeats.filter(id => id !== seatId));
+            setEditingParty({ ...editingParty, partysize: editingPartySeats.length - 1 }); // Update party size
+          }
+        } else if (!seat.partyid) {
+          // Assign seat to the editing party
+          seat.partyid = editingParty.partyid;
+          setEditingPartySeats([...editingPartySeats, seatId]);
+          setEditingParty({ ...editingParty, partysize: editingPartySeats.length + 1 }); // Update party size
+        }
+      } else {
+        // Not in edit mode
+        if (!seat.partyid) {
+          seat.partyid = 'selected';
+          setSelectedSeats([...selectedSeats, seatId]);
+          setNewParty({ ...newParty, partysize: selectedSeats.length + 1 }); // Update party size
+        } else if (seat.partyid === 'selected') {
+          seat.partyid = null;
+          setSelectedSeats(selectedSeats.filter(id => id !== seatId));
+          setNewParty({ ...newParty, partysize: selectedSeats.length - 1 }); // Update party size
+        } else {
+          // Enter edit mode for the party occupying the seat
+          const party = parties.find(p => p.partyid === seat.partyid);
+          if (party) {
+            handleEditParty(party);
+            setSelectedSeat(seat);
+          }
+        }
+      }
+
+      setSeats(updatedSeats);
     }
   };
 
@@ -85,6 +104,18 @@ const PartyManager = () => {
     setEditingPartySeats(initialSeats);
   };
 
+  const getSeatStatus = (seat) => {
+    if (!seat.partyid) {
+      return 'vacant';
+    } else if (seat.partyid === 'selected') {
+      return 'selected';
+    } else if (seat.partyid === editingParty?.partyid) {
+      return 'selected';
+    } else {
+      return 'occupied';
+    }
+  };
+
   const handleSaveParty = async () => {
     if (!editingParty) return;
     try {
@@ -95,7 +126,9 @@ const PartyManager = () => {
       await axios.post(`${apiUrl}/parties/assignSeats/${editingParty.partyid}`, { seat_ids: editingPartySeats });
 
       fetchParties();
+      fetchSeats();
       setEditingParty(null);
+      setSelectedSeat(null);
     } catch (error) {
       console.error('Error saving party', error);
     }
@@ -105,40 +138,27 @@ const PartyManager = () => {
     try {
       await axios.delete(`${apiUrl}/parties/${partyId}`);
       fetchParties();
+      fetchSeats();
+      setSelectedSeat(null);
+      setEditingParty(null);
     } catch (error) {
       console.error('Error deactivating party', error);
     }
   };
 
-  const handleCreateParty = async () => {
+  const handleCreatePartyWithSelectedSeats = async () => {
     try {
-      await axios.post(`${apiUrl}/parties/add`, newParty);
+      const newPartyResponse = await axios.post(`${apiUrl}/parties/add`, newParty);
+      const newPartyId = newPartyResponse.data.party_id;
+
+      await axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats });
+
       fetchParties();
+      fetchSeats();
       setNewParty({ partysize: '', notes: '' });
+      setSelectedSeats([]);
     } catch (error) {
-      console.error('Error creating party', error);
-    }
-  };
-
-  const handleSeatClick = (seatId) => {
-    const seatIndex = seats.findIndex(seat => seat.seatid === seatId);
-    if (seatIndex !== -1) {
-      const updatedSeats = [...seats];
-      const seat = updatedSeats[seatIndex];
-
-      if (seat.status === 'vacant' || seat.partyid === editingParty?.partyid) {
-        if (seat.status === 'vacant') {
-          seat.status = editingParty.partyid;
-          seat.partyid = editingParty.partyid;
-          setEditingPartySeats([...editingPartySeats, seatId]);
-        } else if (seat.status === editingParty.partyid) {
-          seat.status = 'vacant';
-          seat.partyid = null;
-          setEditingPartySeats(editingPartySeats.filter(id => id !== seatId));
-        }
-
-        setSeats(updatedSeats);
-      }
+      console.error('Error creating party with selected seats', error);
     }
   };
 
@@ -155,7 +175,7 @@ const PartyManager = () => {
         <div
           key={seat.seatid}
           onClick={() => handleSeatClick(seat.seatid)}
-          className={`seat ${seat.status === 'vacant' ? 'vacant' : (seat.status === editingParty?.partyid ? 'blue' : 'red')}`}
+          className={`seat ${getSeatStatus(seat)}`}
           style={{
             top: `${seat.posx * seatSize}vh`,
             left: `${seat.posy * seatSize}vw`,
@@ -189,76 +209,40 @@ const PartyManager = () => {
       <div className="seating-container">
         {floors.map(floor => renderSeats(floor))}
       </div>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Party Size</TableCell>
-              <TableCell>Notes</TableCell>
-              <TableCell>Add Items</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>
-                <TextField
-                  value={newParty.partysize}
-                  onChange={(e) => setNewParty({ ...newParty, partysize: e.target.value })}
-                  placeholder="Party Size"
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  value={newParty.notes}
-                  onChange={(e) => setNewParty({ ...newParty, notes: e.target.value })}
-                  placeholder="Notes"
-                />
-              </TableCell>
-              <TableCell />
-              <TableCell>
-                <Button onClick={handleCreateParty}>Add</Button>
-              </TableCell>
-            </TableRow>
-            {parties.map((party) => (
-              <TableRow
-                key={party.partyid}
-                className={`editable-row ${editingParty?.partyid === party.partyid ? 'editing-row' : ''} ${deactivatePartyId === party.partyid ? 'deactivate-row' : ''}`}
-              >
-                <TableCell onClick={() => handleEditParty(party)}>
-                  {editingParty?.partyid === party.partyid ? (
-                    <TextField
-                      value={editingParty.partysize}
-                      onChange={(e) => setEditingParty({ ...editingParty, partysize: e.target.value })}
-                    />
-                  ) : (
-                    party.partysize
-                  )}
-                </TableCell>
-                <TableCell onClick={() => handleEditParty(party)}>
-                  <TextField
-                    value={editingParty?.partyid === party.partyid ? editingParty.notes : party.notes}
-                    onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
-                    disabled={editingParty?.partyid !== party.partyid}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button onClick={() => togglePopup(party.partyid)}>Order</Button>
-                </TableCell>
-                <TableCell>
-                  {editingParty?.partyid === party.partyid ? (
-                    <Button onClick={handleSaveParty}>Save</Button>
-                  ) : deactivatePartyId === party.partyid ? (
-                    <Button onClick={() => handleDeactivateParty(party.partyid)}>Confirm</Button>
-                  ) : (
-                    <Button onClick={() => handleConfirmDeactivate(party.partyid)}>Deactivate</Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {selectedSeats.length > 0 && !editingParty && (
+        <div className="create-party-container">
+          <div>Party Size: {selectedSeats.length}</div> {/* Display the number of selected seats */}
+          <TextField
+            label="Notes"
+            value={newParty.notes}
+            onChange={(e) => setNewParty({ ...newParty, notes: e.target.value })}
+          />
+          <Button className="create-party-button" onClick={handleCreatePartyWithSelectedSeats}>Create Party</Button>
+        </div>
+      )}
+      {editingParty && (
+        <div
+          className="seat-info-box"
+          style={{
+            top: `${selectedSeat?.posx * seatSize}vh`,
+            left: `${selectedSeat?.posy * seatSize}vw`,
+          }}
+        >
+          <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
+          <TextField
+            label="Notes"
+            value={editingParty.notes}
+            onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
+          />
+          <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
+          {deactivatePartyId === editingParty.partyid ? (
+            <Button onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
+          ) : (
+            <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
+          )}
+          <Button onClick={handleSaveParty}>Save</Button>
+        </div>
+      )}
       {isPopupVisible && (
         <div className="popup-container">
           <div className="popup-content">
