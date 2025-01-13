@@ -9,8 +9,6 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const [menu, setMenu] = useState([]);
   const [order, setOrder] = useState([]);
   const [activeTab, setActiveTab] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     axios.get(`${apiUrl}/menu`)
@@ -85,10 +83,13 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         <ul>
           {order.map((item, index) => (
             <li key={index}>
-              {item.product_name} - {item.quantity}
-              <button className="quantity-button" onClick={() => handleDecreaseQuantity(index)}>-</button>
-              <button className="quantity-button" onClick={() => handleIncreaseQuantity(index)}>+</button>
-              <FaTrash className="trash-icon" onClick={() => handleRemoveItem(index)} />
+              <span className="item-name">{item.product_name}</span>
+              <span className="item-quantity">{item.quantity}</span>
+              <div className="item-controls">
+                <button className="quantity-button" onClick={() => handleDecreaseQuantity(index)}>-</button>
+                <button className="quantity-button" onClick={() => handleIncreaseQuantity(index)}>+</button>
+                <FaTrash className="trash-icon" onClick={() => handleRemoveItem(index)} />
+              </div>
             </li>
           ))}
         </ul>
