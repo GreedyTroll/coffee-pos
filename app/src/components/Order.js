@@ -43,7 +43,8 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   };
 
   const handleSendOrder = () => {
-    axios.post(`${apiUrl}/orders/new/${partyId}`, {
+    axios.post(`${apiUrl}/orders/new`, {
+      party_id: partyId,
       payment_method: selectedPaymentMethod,
       order_type: orderType,
       items: order
