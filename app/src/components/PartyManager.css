@@ -79,19 +79,26 @@
 }
 
 .seat-info-box {
-  position: fixed; /* Change to fixed to position relative to the viewport */
-  top: 5vh; /* Position at the top of the page */
-  left: 50%; /* Align to the middle horizontally */
-  transform: translateX(-50%); /* Center the box */
+  position: relative; /* Change to relative to position below the seating container */
+  margin-top: 20px; /* Add margin to separate from the seating container */
   background-color: white;
   border: 1px solid #ccc;
   padding: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000; /* Ensure it appears above other elements */
+  display: flex; /* Use flexbox for layout */
+  justify-content: space-between; /* Space between party details and orders */
+}
+
+.party-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align to the right */
 }
 
 .party-orders {
   margin-top: 10px;
+  flex-grow: 1; /* Allow orders to take remaining space */
 }
 
 .party-orders h3 {
@@ -112,7 +119,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end; /* Align to the right */
-  margin: 10px;
 }
 
 .create-party-container .create-party-button {

@@ -20,6 +20,7 @@ const PartyManager = () => {
   const [deactivatePartyId, setDeactivatePartyId] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [partyOrders, setPartyOrders] = useState([]);
+  const [orderSent, setOrderSent] = useState(false);
 
   const axios = useAxios();
 
@@ -28,6 +29,13 @@ const PartyManager = () => {
     fetchSeats();
     fetchPartyOrders();
   }, []);
+
+  useEffect(() => {
+    if (orderSent) {
+      fetchPartyOrders();
+      setOrderSent(false);
+    }
+  }, [orderSent]);
 
   const fetchParties = async () => {
     try {
@@ -55,7 +63,10 @@ const PartyManager = () => {
     try {
       const response = await axios.get(`${apiUrl}/orders?fulfilled=all`);
       const orders = response.data.reduce((acc, order) => {
-        acc[order.partyid] = order.items;
+        if (!acc[order.partyid]) {
+          acc[order.partyid] = [];
+        }
+        acc[order.partyid].push(...order.items);
         return acc;
       }, {});
       setPartyOrders(orders);
@@ -226,53 +237,47 @@ const PartyManager = () => {
 
   const handleOrderSent = () => {
     setIsPopupVisible(false);
+    setOrderSent(true);
   };
 
   return (
     <div>
-      <div className="route-title-container">
-        <h1>Party Management</h1>
-      </div>
       <div className="seating-container">
         {floors.map(floor => renderSeats(floor))}
       </div>
       {selectedSeats.length > 0 && !editingParty && (
         <div className="create-party-container">
-          <div>Party Size: {selectedSeats.length}</div> {/* Display the number of selected seats */}
-          <TextField
-            label="Notes"
-            value={newParty.notes}
-            onChange={(e) => setNewParty({ ...newParty, notes: e.target.value })}
-          />
           <Button className="create-party-button" onClick={handleCreatePartyWithSelectedSeats}>Create Party</Button>
         </div>
       )}
       {editingParty && (
         <div className="seat-info-box">
-          <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
-          <TextField
-            label="Notes"
-            value={editingParty.notes}
-            onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
-          />
-          <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
-          {deactivatePartyId === editingParty.partyid ? (
-            <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
-          ) : (
-            <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
-          )}
-          <Button onClick={handleSaveParty}>Save</Button>
           <div className="party-orders">
             <h3>Orders</h3>
             {partyOrders[editingParty.partyid] && partyOrders[editingParty.partyid].length > 0 ? (
               <ul>
                 {partyOrders[editingParty.partyid].map(order => (
-                  <li key={order.ProductID}>{order.ProductName} - {order.Quantity}</li>
+                  <li key={`${order.OrderItemID}-${order.ProductID}`}>{order.ProductName} - {order.Quantity}</li>
                 ))}
               </ul>
             ) : (
               <p>No orders found</p>
             )}
+          </div>
+          <div className="party-details">
+            <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
+            <TextField
+              label="Notes"
+              value={editingParty.notes}
+              onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
+            />
+            <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
+            {deactivatePartyId === editingParty.partyid ? (
+              <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
+            ) : (
+              <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
+            )}
+            <Button onClick={handleSaveParty}>Save</Button>
           </div>
         </div>
       )}
