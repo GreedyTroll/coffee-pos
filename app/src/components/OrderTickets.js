@@ -40,7 +40,6 @@ const OrderTickets = () => {
                               }
                             : order
                     )
-                    /*.filter(order => order.items.some(item => !item.prepared))*/
             );
         } catch (error) {
             console.error('Error updating item preparation status:', error);
