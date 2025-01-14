@@ -53,13 +53,11 @@ const PartyManager = () => {
 
   const fetchPartyOrders = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/orders`);
-      console.log(response.data);
+      const response = await axios.get(`${apiUrl}/orders?fulfilled=all`);
       const orders = response.data.reduce((acc, order) => {
         acc[order.partyid] = order.items;
         return acc;
       }, {});
-      console.log(orders);
       setPartyOrders(orders);
     } catch (error) {
       console.error('Error fetching party orders', error);
@@ -126,6 +124,8 @@ const PartyManager = () => {
       return 'selected';
     } else if (seat.partyid === editingParty?.partyid) {
       return 'selected';
+    } else if (partyOrders[seat.partyid]?.every(order => order.Delivered)) {
+      return 'delivered';
     } else {
       return 'occupied';
     }
