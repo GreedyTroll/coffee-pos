@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod
+from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party
 from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timezone, timedelta
@@ -20,8 +20,10 @@ def orders():
     date_start = request.args.get('date_start')
     date_end = request.args.get('date_end')
     fulfilled = request.args.get('fulfilled')
+    party = request.args.get('party_id')
+    active = request.args.get('active')
 
-    query = OrderDetail.query
+    query = OrderDetail.query.join(Party, OrderDetail.partyid == Party.partyid)
 
     if not paid:
         query = query.filter(OrderDetail.paidtime.is_(None))
@@ -40,6 +42,12 @@ def orders():
         query = query.filter(OrderDetail.orderdate <= datetime.strptime(date_end, '%Y-%m-%d'))
     if not fulfilled:
         query = query.filter(OrderDetail.preparing == True)
+    if party:
+        query = query.filter(OrderDetail.partyid == int(party))
+    elif active is not None and active.lower() == 'false':
+        query = query.filter(Party.leftat.isnot(None))
+    else:
+        query = query.filter(Party.leftat.is_(None))
 
     orders = query.all()
     orders_dict = [model_to_dict(order) for order in orders]
