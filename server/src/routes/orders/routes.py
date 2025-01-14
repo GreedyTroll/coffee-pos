@@ -20,6 +20,8 @@ def orders():
     date_start = request.args.get('date_start')
     date_end = request.args.get('date_end')
     fulfilled = request.args.get('fulfilled')
+    if fulfilled is None:
+        fulfilled = 'false'
     party = request.args.get('party_id')
     active = request.args.get('active')
 
@@ -40,8 +42,10 @@ def orders():
         query = query.filter(OrderDetail.orderdate >= today)
     if date_end:
         query = query.filter(OrderDetail.orderdate <= datetime.strptime(date_end, '%Y-%m-%d'))
-    if not fulfilled:
+    if fulfilled.lower() == 'false':
         query = query.filter(OrderDetail.preparing == True)
+    elif fulfilled.lower() == 'true':
+        query = query.filter(OrderDetail.preparing == False)
     if party:
         query = query.filter(OrderDetail.partyid == int(party))
     elif active is not None and active.lower() == 'false':
