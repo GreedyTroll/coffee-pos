@@ -75,12 +75,33 @@
 }
 
 .seat-info-box {
-  position: absolute;
+  position: fixed; /* Change to fixed to position relative to the viewport */
+  top: 5vh; /* Position at the top of the page */
+  left: 50%; /* Align to the middle horizontally */
+  transform: translateX(-50%); /* Center the box */
   background-color: white;
   border: 1px solid #ccc;
   padding: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.party-orders {
+  margin-top: 10px;
+}
+
+.party-orders h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.party-orders ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.party-orders li {
+  margin: 5px 0;
 }
 
 .create-party-container {

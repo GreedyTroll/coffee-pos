@@ -19,13 +19,14 @@ const PartyManager = () => {
   const [newParty, setNewParty] = useState({ partysize: '', notes: '' });
   const [deactivatePartyId, setDeactivatePartyId] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [selectedSeat, setSelectedSeat] = useState(null);
+  const [partyOrders, setPartyOrders] = useState([]);
 
   const axios = useAxios();
 
   useEffect(() => {
     fetchParties();
     fetchSeats();
+    fetchPartyOrders();
   }, []);
 
   const fetchParties = async () => {
@@ -47,6 +48,21 @@ const PartyManager = () => {
       setSeats(updatedSeats);
     } catch (error) {
       console.error('Error fetching seats', error);
+    }
+  };
+
+  const fetchPartyOrders = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/orders`);
+      console.log(response.data);
+      const orders = response.data.reduce((acc, order) => {
+        acc[order.partyid] = order.items;
+        return acc;
+      }, {});
+      console.log(orders);
+      setPartyOrders(orders);
+    } catch (error) {
+      console.error('Error fetching party orders', error);
     }
   };
 
@@ -86,7 +102,6 @@ const PartyManager = () => {
           const party = parties.find(p => p.partyid === seat.partyid);
           if (party) {
             handleEditParty(party);
-            setSelectedSeat(seat);
           }
         }
       }
@@ -128,7 +143,6 @@ const PartyManager = () => {
       fetchParties();
       fetchSeats();
       setEditingParty(null);
-      setSelectedSeat(null);
     } catch (error) {
       console.error('Error saving party', error);
     }
@@ -139,7 +153,7 @@ const PartyManager = () => {
       await axios.delete(`${apiUrl}/parties/${partyId}`);
       fetchParties();
       fetchSeats();
-      setSelectedSeat(null);
+      fetchPartyOrders();
       setEditingParty(null);
     } catch (error) {
       console.error('Error deactivating party', error);
@@ -165,6 +179,19 @@ const PartyManager = () => {
   const handleConfirmDeactivate = (partyId) => {
     setDeactivatePartyId(partyId);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (deactivatePartyId && !event.target.closest('.deactivate-confirm')) {
+        setDeactivatePartyId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [deactivatePartyId]);
 
   const seatSize = 4; // Size of each seat box in pixels
   const floors = [...new Set(seats.map(seat => seat.floor))].sort(); // Get unique floor numbers
@@ -221,13 +248,7 @@ const PartyManager = () => {
         </div>
       )}
       {editingParty && (
-        <div
-          className="seat-info-box"
-          style={{
-            top: `${selectedSeat?.posx * seatSize}vh`,
-            left: `${selectedSeat?.posy * seatSize}vw`,
-          }}
-        >
+        <div className="seat-info-box">
           <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
           <TextField
             label="Notes"
@@ -236,11 +257,23 @@ const PartyManager = () => {
           />
           <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
           {deactivatePartyId === editingParty.partyid ? (
-            <Button onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
+            <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
           ) : (
             <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
           )}
           <Button onClick={handleSaveParty}>Save</Button>
+          <div className="party-orders">
+            <h3>Orders</h3>
+            {partyOrders[editingParty.partyid] && partyOrders[editingParty.partyid].length > 0 ? (
+              <ul>
+                {partyOrders[editingParty.partyid].map(order => (
+                  <li key={order.ProductID}>{order.ProductName} - {order.Quantity}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No orders found</p>
+            )}
+          </div>
         </div>
       )}
       {isPopupVisible && (
