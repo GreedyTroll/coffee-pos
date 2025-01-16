@@ -107,6 +107,7 @@ const PartyManager = () => {
           setEditingParty({ ...editingParty, partysize: editingPartySeats.length + 1 }); // Update party size
         } else {
           // Switch to edit mode for the party occupying the seat
+          handleSaveParty(false); // Save current party before switching, but do not reset editingParty
           const party = parties.find(p => p.partyid === seat.partyid);
           if (party) {
             handleEditParty(party);
@@ -124,9 +125,11 @@ const PartyManager = () => {
           setNewParty({ ...newParty, partysize: selectedSeats.length - 1 }); // Update party size
         } else {
           // Enter edit mode for the party occupying the seat
-          const party = parties.find(p => p.partyid === seat.partyid);
-          if (party) {
-            handleEditParty(party);
+          if (selectedSeats.length === 0) { // Prevent entering edit mode if selectedSeats is not empty
+            const party = parties.find(p => p.partyid === seat.partyid);
+            if (party) {
+              handleEditParty(party);
+            }
           }
         }
       }
@@ -158,7 +161,7 @@ const PartyManager = () => {
     }
   };
 
-  const handleSaveParty = async () => {
+  const handleSaveParty = async (resetEditingParty = true) => {
     if (!editingParty) return;
     try {
       // Update party info
@@ -169,7 +172,9 @@ const PartyManager = () => {
 
       fetchParties();
       fetchSeats();
-      setEditingParty(null);
+      if (resetEditingParty) {
+        setEditingParty(null);
+      }
     } catch (error) {
       console.error('Error saving party', error);
     }
