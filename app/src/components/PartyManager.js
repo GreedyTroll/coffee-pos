@@ -7,8 +7,15 @@ import OrderTickets from './OrderTickets'; // Import OrderTickets
 import {
   Paper,
   TextField,
-  Button
+  Button,
+  IconButton // Import IconButton
 } from '@mui/material';
+import { red } from '@mui/material/colors';
+import AddIcon from '@mui/icons-material/Add'; // Import AddIcon
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Import ShoppingCartIcon
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'; // Import DirectionsRunIcon
+import DoneIcon from '@mui/icons-material/Done'; // Import DoneIcon
+import GroupAddIcon from '@mui/icons-material/GroupAdd'; // Import GroupAddIcon
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -98,6 +105,12 @@ const PartyManager = () => {
           seat.partyid = editingParty.partyid;
           setEditingPartySeats([...editingPartySeats, seatId]);
           setEditingParty({ ...editingParty, partysize: editingPartySeats.length + 1 }); // Update party size
+        } else {
+          // Switch to edit mode for the party occupying the seat
+          const party = parties.find(p => p.partyid === seat.partyid);
+          if (party) {
+            handleEditParty(party);
+          }
         }
       } else {
         // Not in edit mode
@@ -262,47 +275,60 @@ const PartyManager = () => {
   return (
     <div>
       <div className="party-manager-container">
-        {editingParty && (
-          <div className="party-detail">
-            <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
-            <TextField
-              className="notes-field" // Add this line
-              label="Notes"
-              value={editingParty.notes}
-              onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
-            />
-            <h3>Orders</h3>
-            {partyOrders[editingParty.partyid] && partyOrders[editingParty.partyid].length > 0 ? (
-              <ul>
-                {partyOrders[editingParty.partyid].map(order => (
-                  <li key={`${order.OrderItemID}-${order.ProductID}`}>{order.ProductName} - {order.Quantity}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No orders found</p>
-            )}
-          </div>
-        )}
+        <div className="party-detail">
+          {editingParty && (
+            <div>
+              <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
+              <TextField
+                className="notes-field" // Add this line
+                label="Notes"
+                value={editingParty.notes}
+                onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
+              />
+              <h3>Orders</h3>
+              {partyOrders[editingParty.partyid] && partyOrders[editingParty.partyid].length > 0 ? (
+                <ul>
+                  {partyOrders[editingParty.partyid].map(order => (
+                    <li key={`${order.OrderItemID}-${order.ProductID}`}>{order.ProductName} - {order.Quantity}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No orders found</p>
+              )}
+            </div>
+          )}
+        </div>
         <div className="seating-container">
           {floors.map(floor => renderSeats(floor))}
         </div>
-        {selectedSeats.length > 0 && !editingParty && (
-          <div className="create-party-container">
-            <Button className="create-party-button" onClick={handleCreatePartyWithSelectedSeats}>Create Party</Button>
-          </div>
-        )}
-        
-        <div className="seat-info-box">
-          <Button onClick={() => togglePopup()}>Take-out Order</Button>
+        <div className="actions">
+          <IconButton onClick={() => togglePopup()} aria-label="Take-out Order">
+            <AddIcon sx={{ fontSize: 80 }} />
+          </IconButton>
+          {selectedSeats.length > 0 && !editingParty && (
+            <div className="create-party-container">
+              <IconButton onClick={handleCreatePartyWithSelectedSeats} aria-label="Create Party">
+                <GroupAddIcon sx={{ fontSize: 80 }} />
+              </IconButton>
+            </div>
+          )}
           {editingParty && (
             <div className="party-actions">
-            <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
-            {deactivatePartyId === editingParty.partyid ? (
-              <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
-            ) : (
-              <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
-            )}
-            <Button onClick={handleSaveParty}>Save</Button>
+              <IconButton onClick={() => togglePopup(editingParty.partyid)} aria-label="Order">
+                <ShoppingCartIcon sx={{ fontSize: 80 }} />
+              </IconButton>
+              {deactivatePartyId === editingParty.partyid ? (
+                <IconButton className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)} aria-label="Confirm Deactivate">
+                  <DirectionsRunIcon sx={{ fontSize: 80, color: red[500] }} />
+                </IconButton>
+              ) : (
+                <IconButton onClick={() => handleConfirmDeactivate(editingParty.partyid)} aria-label="Deactivate">
+                  <DirectionsRunIcon sx={{ fontSize: 80 }} />
+                </IconButton>
+              )}
+              <IconButton onClick={handleSaveParty} aria-label="Save">
+                <DoneIcon sx={{ fontSize: 80 }} />
+              </IconButton>
             </div>
           )}
         </div>

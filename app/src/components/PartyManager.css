@@ -22,7 +22,7 @@
   width: 30%; /* Adjust width based on your needs */
   height: 80vh; /* Adjust height based on your needs */
   border: 1px solid #ccc;
-  margin: 10px;
+  margin: 5px;
   box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
@@ -88,27 +88,27 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.seat-info-box {
+.actions {
   position: relative; /* Change to relative to position below the seating container */
-  margin-top: 20px; /* Add margin to separate from the seating container */
-  background-color: white;
-  border: 1px solid #ccc;
+  margin-right: 20px;
   padding: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000; /* Ensure it appears above other elements */
   display: flex; /* Use flexbox for layout */
-  justify-content: space-between; /* Space between party actions and orders */
+  flex-direction: column; /* Change to column to stack elements vertically */
+  align-items: flex-start; /* Align items to the start */
+  height: 80vh; /* Match the height of the seating-container */
+  width: 10%;
 }
 
 .party-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end; /* Align to the right */
+  margin-top: auto; /* Move to the bottom of the actions component */
 }
 
 .party-detail {
-  width: calc(10% - 35px); /* Subtract the total horizontal margin (10px + 25px) from 10% width */
-  margin-right: 10px; /* Add margin to separate from seating-container */
+  width: calc(20% - 25px); /* Subtract the total horizontal margin (10px + 25px) from 10% width */
   margin-left: 25px; /* Add left margin */
   background-color: rgba(249, 249, 249, 0.5); /* Light background color with transparency */
   border: 1px solid #ddd; /* Light border color */
@@ -116,7 +116,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
   border-radius: 8px; /* Rounded corners */
   z-index: 1000; /* Ensure it appears above other elements */
-  height: 60vh; /* Match the height of the floor-container */
+  max-height: 75vh; /* Match the height of the floor-container */
   overflow-y: auto; /* Add vertical scroll if content overflows */
 }
 
@@ -153,19 +153,4 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end; /* Align to the right */
-}
-
-.create-party-container .create-party-button {
-  background-color: #4eaf4c; /* Green background */
-  color: white; /* White text */
-  padding: 10px 20px; /* Padding */
-  border: none; /* Remove border */
-  border-radius: 5px; /* Rounded corners */
-  cursor: pointer; /* Pointer cursor on hover */
-  font-size: 16px; /* Increase font size */
-  transition: background-color 0.3s; /* Smooth transition */
-}
-
-.create-party-container .create-party-button:hover {
-  background-color: #45a049; /* Darker green on hover */
 }
