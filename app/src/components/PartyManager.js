@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './PartyManager.css';
 import './Route.css';
 import Order from './Order';
+import OrderTickets from './OrderTickets'; // Import OrderTickets
 import {
   Paper,
   TextField,
@@ -204,28 +205,43 @@ const PartyManager = () => {
     };
   }, [deactivatePartyId]);
 
-  const seatSize = 4; // Size of each seat box in pixels
   const floors = [...new Set(seats.map(seat => seat.floor))].sort(); // Get unique floor numbers
 
-  const renderSeats = (floor) => (
-    <div className="floor-container" key={floor}>
-      {seats.filter(seat => seat.floor === floor).map((seat) => (
-        <div
-          key={seat.seatid}
-          onClick={() => handleSeatClick(seat.seatid)}
-          className={`seat ${getSeatStatus(seat)}`}
-          style={{
-            top: `${seat.posx * seatSize}vh`,
-            left: `${seat.posy * seatSize}vw`,
-          }}
-        >
-          <Paper className="seat-paper">
-            {`${seat.seatid}`}
-          </Paper>
-        </div>
-      ))}
-    </div>
-  );
+  const renderSeats = (floor) => {
+    const rows = 10;
+    const cols = 5;
+    const grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+
+    seats.filter(seat => seat.floor === floor).forEach(seat => {
+      if (seat.posx < rows && seat.posy < cols) {
+        grid[seat.posx][seat.posy] = seat;
+      } else {
+        console.warn(`Seat position out of bounds: seatid=${seat.seatid}, posx=${seat.posx}, posy=${seat.posy}`);
+      }
+    });
+
+    return (
+      <div className="floor-container" key={floor}>
+        {grid.map((row, rowIndex) => (
+          <div className="seat-row" key={rowIndex}>
+            {row.map((seat, colIndex) => (
+              <div
+                key={colIndex}
+                className={`seat ${seat ? getSeatStatus(seat) : ''}`}
+                onClick={() => seat && handleSeatClick(seat.seatid)}
+              >
+                {seat && (
+                  <Paper className="seat-paper" elevation={3} style={{color: 'white'}}>
+                    {`${seat.seatid}`}
+                  </Paper>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [selectedPartyId, setSelectedPartyId] = useState(null);
@@ -242,17 +258,16 @@ const PartyManager = () => {
 
   return (
     <div>
-      <div className="seating-container">
-        {floors.map(floor => renderSeats(floor))}
-      </div>
-      {selectedSeats.length > 0 && !editingParty && (
-        <div className="create-party-container">
-          <Button className="create-party-button" onClick={handleCreatePartyWithSelectedSeats}>Create Party</Button>
-        </div>
-      )}
-      {editingParty && (
-        <div className="seat-info-box">
-          <div className="party-orders">
+      <div className="party-manager-container">
+        {editingParty && (
+          <div className="party-detail">
+            <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
+            <TextField
+              className="notes-field" // Add this line
+              label="Notes"
+              value={editingParty.notes}
+              onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
+            />
             <h3>Orders</h3>
             {partyOrders[editingParty.partyid] && partyOrders[editingParty.partyid].length > 0 ? (
               <ul>
@@ -264,33 +279,40 @@ const PartyManager = () => {
               <p>No orders found</p>
             )}
           </div>
-          <div className="party-details">
-            <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
-            <TextField
-              label="Notes"
-              value={editingParty.notes}
-              onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
-            />
-            <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
-            {deactivatePartyId === editingParty.partyid ? (
-              <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
-            ) : (
-              <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
-            )}
-            <Button onClick={handleSaveParty}>Save</Button>
-          </div>
+        )}
+        <div className="seating-container">
+          {floors.map(floor => renderSeats(floor))}
         </div>
-      )}
-      {isPopupVisible && (
-        <div className="popup-container">
-          <div className="popup-content">
-            <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button onClick={togglePopup}>Close</Button>
+        {selectedSeats.length > 0 && !editingParty && (
+          <div className="create-party-container">
+            <Button className="create-party-button" onClick={handleCreatePartyWithSelectedSeats}>Create Party</Button>
+          </div>
+        )}
+        {editingParty && (
+          <div className="seat-info-box">
+            <div className="party-actions">
+              <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
+              {deactivatePartyId === editingParty.partyid ? (
+                <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
+              ) : (
+                <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
+              )}
+              <Button onClick={handleSaveParty}>Save</Button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+        {isPopupVisible && (
+          <div className="popup-container">
+            <div className="popup-content">
+              <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button onClick={togglePopup}>Close</Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <OrderTickets />
     </div>
   );
 };

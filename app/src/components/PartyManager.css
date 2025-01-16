@@ -1,36 +1,46 @@
 /* PartyManager.css */
+.party-manager-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
 .seating-container {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap; /* Allow wrapping to handle smaller screens */
-  width: 100%;
-  height: 50vh; /* Adjust height based on your needs */
+  width: 80%; /* Adjust width to 80% to make space for party-orders */
+  height: 85vh; /* Adjust height based on your needs */
   overflow: auto; /* Add scroll if content overflows */
 }
 
 .floor-container {
-  position: relative;
-  width: 30vw; /* Relative width */
-  height: 45vh; /* Relative height */
+  display: flex;
+  flex-direction: column;
+  width: 30%; /* Adjust width based on your needs */
+  height: 80vh; /* Adjust height based on your needs */
   border: 1px solid #ccc;
   margin: 10px;
   box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
-.editing-row {
-  background-color: #f0f8ff;
-}
-
-.deactivate-row {
-  background-color: #ffe6e6;
+.seat-row {
+  display: flex;
+  width: 100%;
+  height: 10%;
 }
 
 .seat {
-  position: absolute;
+  flex: 1;
+  position: relative;
   cursor: pointer;
-  width: 5vw; /* Adjust width based on your needs */
-  height: 3vh; /* Adjust height based on your needs */
+  width: 20%; /* 5 columns */
+  height: 90%; /* Adjust height based on your needs */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .seat-paper {
@@ -87,32 +97,56 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000; /* Ensure it appears above other elements */
   display: flex; /* Use flexbox for layout */
-  justify-content: space-between; /* Space between party details and orders */
+  justify-content: space-between; /* Space between party actions and orders */
 }
 
-.party-details {
+.party-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end; /* Align to the right */
 }
 
-.party-orders {
-  margin-top: 10px;
-  flex-grow: 1; /* Allow orders to take remaining space */
+.party-detail {
+  width: calc(10% - 35px); /* Subtract the total horizontal margin (10px + 25px) from 10% width */
+  margin-right: 10px; /* Add margin to separate from seating-container */
+  margin-left: 25px; /* Add left margin */
+  background-color: rgba(249, 249, 249, 0.5); /* Light background color with transparency */
+  border: 1px solid #ddd; /* Light border color */
+  padding: 15px; /* Increase padding */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 8px; /* Rounded corners */
+  z-index: 1000; /* Ensure it appears above other elements */
+  height: 60vh; /* Match the height of the floor-container */
+  overflow-y: auto; /* Add vertical scroll if content overflows */
 }
 
-.party-orders h3 {
-  margin: 0;
-  font-size: 1.2em;
+.party-detail h3 {
+  margin: 0 0 10px 0; /* Add bottom margin */
+  font-size: 1.4em; /* Increase font size */
+  color: #333; /* Darker text color */
+  border-bottom: 1px solid #ddd; /* Add bottom border */
+  padding-bottom: 5px; /* Add padding to the bottom */
 }
 
-.party-orders ul {
+.party-detail ul {
   list-style-type: none;
   padding: 0;
+  margin: 0; /* Remove default margin */
 }
 
-.party-orders li {
-  margin: 5px 0;
+.party-detail li {
+  margin: 8px 0; /* Add vertical margin */
+  padding: 8px; /* Add padding */
+  background-color: #fff; /* White background */
+  border: 1px solid #ddd; /* Light border */
+  border-radius: 4px; /* Rounded corners */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  display: flex;
+  justify-content: space-between; /* Space between product name and quantity */
+}
+
+.party-detail .notes-field {
+  margin-top: 10px; /* Add margin above the Notes textfield */
 }
 
 .create-party-container {
@@ -122,7 +156,7 @@
 }
 
 .create-party-container .create-party-button {
-  background-color: #4CAF50; /* Green background */
+  background-color: #4eaf4c; /* Green background */
   color: white; /* White text */
   padding: 10px 20px; /* Padding */
   border: none; /* Remove border */
