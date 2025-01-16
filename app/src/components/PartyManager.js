@@ -22,6 +22,7 @@ const PartyManager = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [partyOrders, setPartyOrders] = useState([]);
   const [orderSent, setOrderSent] = useState(false);
+  const [orderTicketsUpdated, setOrderTicketsUpdated] = useState(false);
 
   const axios = useAxios();
 
@@ -35,6 +36,7 @@ const PartyManager = () => {
     if (orderSent) {
       fetchPartyOrders();
       setOrderSent(false);
+      setOrderTicketsUpdated(!orderTicketsUpdated); // Trigger re-render of OrderTickets
     }
   }, [orderSent]);
 
@@ -254,6 +256,7 @@ const PartyManager = () => {
   const handleOrderSent = () => {
     setIsPopupVisible(false);
     setOrderSent(true);
+    setOrderTicketsUpdated(!orderTicketsUpdated); // Trigger re-render of OrderTickets
   };
 
   return (
@@ -288,19 +291,21 @@ const PartyManager = () => {
             <Button className="create-party-button" onClick={handleCreatePartyWithSelectedSeats}>Create Party</Button>
           </div>
         )}
-        {editingParty && (
-          <div className="seat-info-box">
+        
+        <div className="seat-info-box">
+          <Button onClick={() => togglePopup()}>Take-out Order</Button>
+          {editingParty && (
             <div className="party-actions">
-              <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
-              {deactivatePartyId === editingParty.partyid ? (
-                <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
-              ) : (
-                <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
-              )}
-              <Button onClick={handleSaveParty}>Save</Button>
+            <Button onClick={() => togglePopup(editingParty.partyid)}>Order</Button>
+            {deactivatePartyId === editingParty.partyid ? (
+              <Button className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)}>Confirm</Button>
+            ) : (
+              <Button onClick={() => handleConfirmDeactivate(editingParty.partyid)}>Deactivate</Button>
+            )}
+            <Button onClick={handleSaveParty}>Save</Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         {isPopupVisible && (
           <div className="popup-container">
             <div className="popup-content">
@@ -312,7 +317,7 @@ const PartyManager = () => {
           </div>
         )}
       </div>
-      <OrderTickets />
+      <OrderTickets key={orderTicketsUpdated} /> {/* Pass key to force re-render */}
     </div>
   );
 };
