@@ -1,6 +1,11 @@
+.order-tickets-wrapper {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  width: 99vw;
+}
+
 .order-tickets-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex; /* Change to inline-flex for horizontal scrolling */
+  flex-wrap: nowrap; /* Prevent wrapping */
   align-items: flex-start; /* Align tickets at the top */
   gap: 10px; /* Add space between tickets */
 }
