@@ -198,6 +198,11 @@ const PartyManager = () => {
       fetchSeats();
       setNewParty({ partysize: '', notes: '' });
       setSelectedSeats([]);
+
+      // Automatically enter edit mode for the new party
+      const newPartyData = { partyid: newPartyId, partysize: selectedSeats.length, notes: newParty.notes };
+      setEditingParty(newPartyData);
+      setEditingPartySeats(selectedSeats);
     } catch (error) {
       console.error('Error creating party with selected seats', error);
     }
