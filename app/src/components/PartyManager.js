@@ -277,6 +277,13 @@ const PartyManager = () => {
     setOrderTicketsUpdated(!orderTicketsUpdated); // Trigger re-render of OrderTickets
   };
 
+  const handleOrderTicketClick = (partyId) => {
+    const party = parties.find(p => p.partyid === partyId);
+    if (party) {
+      handleEditParty(party);
+    }
+  };
+
   return (
     <div>
       <div className="party-manager-container">
@@ -348,7 +355,7 @@ const PartyManager = () => {
           </div>
         )}
       </div>
-      <OrderTickets key={orderTicketsUpdated} /> {/* Pass key to force re-render */}
+      <OrderTickets key={orderTicketsUpdated} onOrderTicketClick={handleOrderTicketClick} /> {/* Pass handler to OrderTickets */}
     </div>
   );
 };
