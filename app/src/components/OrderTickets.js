@@ -68,6 +68,7 @@ const OrderTickets = ({ onOrderTicketClick }) => {
                         <p>Order Type: {order.ordertype}</p>
                         <p>Payment Method: {order.paymentmethod}</p>
                         <p>Total Amount: {Number(order.totalamount).toFixed(0)}</p>
+                        <p>Seat IDs: {order.seat_ids.join(', ')}</p> {/* Display seat IDs */}
                         <ul>
                             {order.items.map(item => (
                                 <li key={item.OrderItemID} style={{ display: 'flex', justifyContent: 'space-between' }}>
