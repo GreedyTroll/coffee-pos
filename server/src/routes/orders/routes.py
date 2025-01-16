@@ -25,7 +25,7 @@ def orders():
     party = request.args.get('party_id')
     active = request.args.get('active')
 
-    query = OrderDetail.query.join(Party, OrderDetail.partyid == Party.partyid)
+    query = OrderDetail.query.outerjoin(Party, OrderDetail.partyid == Party.partyid)
 
     if not paid:
         query = query.filter(OrderDetail.paidtime.is_(None))
