@@ -11,7 +11,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const [activeTab, setActiveTab] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
-  const [orderType, setOrderType] = useState('Dine-in');
+  const [orderType, setOrderType] = useState(partyId ? 'Dine-in' : 'Take-out'); // Set default orderType
 
   useEffect(() => {
     axios.get(`${apiUrl}/menu`)
