@@ -18,6 +18,7 @@ class Party(db.Model):
     partysize = db.Column(db.Integer, default=1)
     createdat = db.Column(db.DateTime, default=func.now())
     leftat = db.Column(db.DateTime, nullable=True)
+    seats = db.relationship('Seat', backref='party')  # Add relationship to Seat
 
 class Seat(db.Model):
     __tablename__ = 'seats'
@@ -93,7 +94,7 @@ class OrderItem(db.Model):
 class OrderDetail(db.Model):
     __tablename__ = 'orderdetails'
     orderid = db.Column(db.Integer, primary_key=True)
-    partyid = db.Column(db.Integer)
+    partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'))  # Add foreign key to Party
     employeeid = db.Column(db.Integer)
     orderdate = db.Column(db.DateTime)
     totalamount = db.Column(db.Numeric(10, 2))
@@ -102,3 +103,4 @@ class OrderDetail(db.Model):
     ordertype = db.Column(db.String(20))
     items = db.Column(db.JSON)
     preparing = db.Column(db.Boolean)
+    party = db.relationship('Party', backref='orderdetails')  # Add relationship to Party

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party
+from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party, Seat  # Import Seat model
 from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timezone, timedelta
@@ -26,6 +26,7 @@ def orders():
     active = request.args.get('active')
 
     query = OrderDetail.query.outerjoin(Party, OrderDetail.partyid == Party.partyid)
+    query = query.outerjoin(Seat, Party.partyid == Seat.partyid)  # Join with Seat table
 
     if not paid:
         query = query.filter(OrderDetail.paidtime.is_(None))
@@ -54,7 +55,14 @@ def orders():
         query = query.filter(Party.leftat.is_(None))
 
     orders = query.all()
-    orders_dict = [model_to_dict(order) for order in orders]
+    orders_dict = []
+    for order in orders:
+        order_dict = model_to_dict(order)
+        if order.party:
+            order_dict['seat_ids'] = [seat.seatid for seat in order.party.seats]  # Add seat IDs to the response
+        else:
+            order_dict['seat_ids'] = []  # No seats if no party
+        orders_dict.append(order_dict)
     
     return jsonify(orders_dict)
 
