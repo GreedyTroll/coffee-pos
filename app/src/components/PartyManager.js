@@ -71,7 +71,7 @@ const PartyManager = () => {
 
   const fetchPartyOrders = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/orders?fulfilled=all`);
+      const response = await axios.get(`${apiUrl}/orders?fulfilled=all`); // TODO, only fetch dine-in orders
       const orders = response.data.reduce((acc, order) => {
         if (!acc[order.partyid]) {
           acc[order.partyid] = [];
@@ -283,9 +283,11 @@ const PartyManager = () => {
   };
 
   const handleOrderTicketClick = (partyId) => {
-    const party = parties.find(p => p.partyid === partyId);
-    if (party) {
-      handleEditParty(party);
+    if (selectedSeats.length === 0) { // Prevent entering edit mode if selectedSeats is not empty
+      const party = parties.find(p => p.partyid === partyId);
+      if (party) {
+        handleEditParty(party);
+      }
     }
   };
 
