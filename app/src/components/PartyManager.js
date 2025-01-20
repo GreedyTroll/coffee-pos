@@ -16,6 +16,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Import Shopp
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'; // Import DirectionsRunIcon
 import DoneIcon from '@mui/icons-material/Done'; // Import DoneIcon
 import GroupAddIcon from '@mui/icons-material/GroupAdd'; // Import GroupAddIcon
+import CloseIcon from '@mui/icons-material/Close'; // Import CloseIcon
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -354,10 +355,12 @@ const PartyManager = () => {
         {isPopupVisible && (
           <div className="popup-container">
             <div className="popup-content">
-              <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button onClick={togglePopup}>Close</Button>
+              <div className="popup-actions">
+                <IconButton onClick={togglePopup} aria-label="Close">
+                  <CloseIcon />
+                </IconButton>
               </div>
+              <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
             </div>
           </div>
         )}
