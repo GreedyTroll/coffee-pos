@@ -20,6 +20,7 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
   supported_identity_providers = ["COGNITO"]
   explicit_auth_flows = ["USER_PASSWORD_AUTH"]
   callback_urls = ["http://localhost:3000/"]
+  logout_urls = ["http://localhost:3000/"]
 }
 
 resource "aws_cognito_user_pool_domain" "user_pool_domain" {
