@@ -65,10 +65,10 @@ const OrderTickets = ({ onOrderTicketClick }) => {
                         onClick={() => onOrderTicketClick(order.partyid)} // Call handler on click
                     >
                         <h3>{new Date(order.orderdate).toLocaleTimeString()}</h3>
-                        <p>Order Type: {order.ordertype}</p>
-                        <p>Payment Method: {order.paymentmethod}</p>
-                        <p>Total Amount: {Number(order.totalamount).toFixed(0)}</p>
-                        <p>Seat IDs: {order.seat_ids.join(', ')}</p> {/* Display seat IDs */}
+                        <p>Total: {Number(order.totalamount).toFixed(0)}</p>
+                        {order.seat_ids.length > 0 && (
+                          <p>Seats: {order.seat_ids.join(', ')}</p> // Display seat IDs
+                        )}
                         <ul>
                             {order.items.map(item => (
                                 <li key={item.OrderItemID} style={{ display: 'flex', justifyContent: 'space-between' }}>
