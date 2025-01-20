@@ -5,7 +5,7 @@ import './Route.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const Menu = () => {
+const Menu = ({ isAuthenticated }) => {
     const [menu, setMenu] = useState([]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [newCategory, setNewCategory] = useState({ category_name: '', description: '', menu_order: 0 });
@@ -162,7 +162,7 @@ const Menu = () => {
                         <button onClick={cancelChanges}>Cancel</button>
                     </>
                 ) : (
-                    <button onClick={toggleEditMode}>Edit Mode</button>
+                    isAuthenticated && <button onClick={toggleEditMode}>Edit Mode</button>
                 )}
             </div>
             {categories.map((category, index) => (
