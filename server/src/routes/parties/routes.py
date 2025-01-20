@@ -5,7 +5,6 @@ import json
 
 import pytz
 from datetime import datetime
-# from datetime import timezone, timedelta
 import logging
 from common.models import model_to_dict
 

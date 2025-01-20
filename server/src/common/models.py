@@ -1,6 +1,5 @@
 from enum import Enum
 from sqlalchemy.sql import func
-# from datetime import datetime
 from app import db
 
 def model_to_dict(model):
@@ -19,6 +18,7 @@ class Party(db.Model):
     partysize = db.Column(db.Integer, default=1)
     createdat = db.Column(db.DateTime, default=func.now())
     leftat = db.Column(db.DateTime, nullable=True)
+    seats = db.relationship('Seat', backref='party')  # Add relationship to Seat
 
 class Seat(db.Model):
     __tablename__ = 'seats'
@@ -27,8 +27,7 @@ class Seat(db.Model):
     posx = db.Column(db.Integer, nullable=False)
     posy = db.Column(db.Integer, nullable=False)
     partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'), nullable=True)
-    # istaken = db.Column(db.Boolean, default=False)
-
+    
 class Employee(db.Model):
     __tablename__ = 'employees'
     employeeid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -55,7 +54,7 @@ class Item(db.Model):
     categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
     isdeleted = db.Column(db.Boolean, default=False)
     createdat = db.Column(db.DateTime, default=func.now())
-
+    
 class Discount(db.Model):
     __tablename__ = 'discounts'
     discountid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -69,6 +68,10 @@ class DiscountCombination(db.Model):
     categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
     quantity = db.Column(db.Integer)
 
+class PaymentMethod(db.Model):
+    __tablename__ = 'paymentmethods'
+    methodname = db.Column(db.String(20), primary_key=True)
+
 class Order(db.Model):
     __tablename__ = 'orders'
     orderid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -76,7 +79,9 @@ class Order(db.Model):
     employeeid = db.Column(db.Integer, db.ForeignKey('employees.employeeid'))
     orderdate = db.Column(db.DateTime, default=func.now())
     totalamount = db.Column(db.Numeric(10, 2))
-    notes = db.Column(db.Text)
+    paymentmethod = db.Column(db.String(20), db.ForeignKey('paymentmethods.methodname'))
+    paidtime = db.Column(db.DateTime)
+    ordertype = db.Column(db.String(20))
 
 class OrderItem(db.Model):
     __tablename__ = 'orderitems'
@@ -84,4 +89,18 @@ class OrderItem(db.Model):
     orderid = db.Column(db.Integer, db.ForeignKey('orders.orderid'))
     productid = db.Column(db.Integer, db.ForeignKey('items.productid'))
     quantity = db.Column(db.Integer)
-    price = db.Column(db.Numeric(10, 2))
+    delivered = db.Column(db.Boolean, default=False)
+
+class OrderDetail(db.Model):
+    __tablename__ = 'orderdetails'
+    orderid = db.Column(db.Integer, primary_key=True)
+    partyid = db.Column(db.Integer, db.ForeignKey('parties.partyid'))  # Add foreign key to Party
+    employeeid = db.Column(db.Integer)
+    orderdate = db.Column(db.DateTime)
+    totalamount = db.Column(db.Numeric(10, 2))
+    paymentmethod = db.Column(db.String(20))
+    paidtime = db.Column(db.DateTime)
+    ordertype = db.Column(db.String(20))
+    items = db.Column(db.JSON)
+    preparing = db.Column(db.Boolean)
+    party = db.relationship('Party', backref='orderdetails')  # Add relationship to Party

@@ -65,6 +65,11 @@ CREATE TABLE DiscountCombinations(
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
 
+-- Payment methods table
+CREATE TABLE PaymentMethods (
+    MethodName VARCHAR(20) PRIMARY KEY
+);
+
 -- Orders table
 CREATE TABLE Orders (
     OrderID SERIAL PRIMARY KEY,
@@ -72,8 +77,12 @@ CREATE TABLE Orders (
     EmployeeID INT,
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     TotalAmount DECIMAL(10, 2),
+    PaymentMethod VARCHAR(20),
+    PaidTime TIMESTAMP,
+    OrderType VARCHAR(20),
     FOREIGN KEY (PartyID) REFERENCES Parties(PartyID),
-    FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID)
+    FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID),
+    FOREIGN KEY (PaymentMethod) REFERENCES PaymentMethods(MethodName)
 );
 
 -- OrderItems table
@@ -82,7 +91,37 @@ CREATE TABLE OrderItems (
     OrderID INT,
     ProductID INT,
     Quantity INT,
-    Price DECIMAL(10, 2),
+    Delivered Boolean DEFAULT FALSE,
     FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Items(ProductID)
 );
+
+-- OrderDetail view
+CREATE VIEW OrderDetails AS
+SELECT 
+    o.OrderID,
+    o.PartyID,
+    o.EmployeeID,
+    o.OrderDate,
+    o.TotalAmount,
+    o.PaymentMethod,
+    o.PaidTime,
+    o.OrderType,
+    JSON_AGG(
+        JSON_BUILD_OBJECT(
+            'OrderItemID', oi.OrderItemID,
+            'ProductID', oi.ProductID,
+            'ProductName', i.ProductName,
+            'Quantity', oi.Quantity,
+            'Delivered', oi.Delivered
+        )
+    ) AS Items,
+    BOOL_OR(NOT oi.Delivered) AS Preparing
+FROM 
+    Orders o
+JOIN 
+    OrderItems oi ON o.OrderID = oi.OrderID
+JOIN 
+    Items i ON oi.ProductID = i.ProductID
+GROUP BY 
+    o.OrderID;
