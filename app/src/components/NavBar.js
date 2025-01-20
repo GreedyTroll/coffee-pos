@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from 'react-oidc-context';
-import './NavBar.css'; // Import the CSS file
+import './NavBar.css';
 
 const Navbar = () => {
   const auth = useAuth();
@@ -26,10 +26,10 @@ const Navbar = () => {
       <div className="navContainer">
         <ul className="navList">
           <li className="navItem"><Link to="/" className="navButton">Home</Link></li>
-          <li className="navItem"><Link to="/menu" className="navButton">Menu</Link></li>
           {auth.isAuthenticated ? (
             <>
               <li className="navItem"><Link to="/management" className="navButton">Management</Link></li>
+              <li className="navItem"><Link to="/menu" className="navButton">Menu</Link></li>
               <li className="navItem"><a onClick={handleLogout} className="navButton" >Logout</a></li>
             </>
           ) : (
