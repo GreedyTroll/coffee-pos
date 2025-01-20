@@ -30,10 +30,10 @@ const Navbar = () => {
           {auth.isAuthenticated ? (
             <>
               <li className="navItem"><Link to="/management" className="navButton">Management</Link></li>
-              <li className="navItem"><button onClick={handleLogout} className="navButton" style={{ background: 'transparent' }}>Logout</button></li>
+              <li className="navItem"><a onClick={handleLogout} className="navButton" >Logout</a></li>
             </>
           ) : (
-            <li className="navItem"><button onClick={handleLogin} className="navButton" style={{ background: 'transparent' }}>Login</button></li>
+            <li className="navItem"><a onClick={handleLogin} className="navButton">Login</a></li>
           )}
         </ul>
       </div>
