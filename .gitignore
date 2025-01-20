@@ -4,3 +4,7 @@ init_env.sh
 *node_modules/
 *package-lock.json
 *venv/
+
+# terraform
+*.terraform*
+*.tfstate
