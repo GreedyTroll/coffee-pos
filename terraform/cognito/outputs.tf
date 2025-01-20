@@ -1,6 +1,11 @@
 # Copyright (c) HashiCorp, Inc.
 # SPDX-License-Identifier: MPL-2.0
 
+output "userpool_id" {
+    description = "The ID of the user pool"
+    value       = aws_cognito_user_pool.user_pool.id
+}
+
 output "access_token_url" {
     description = "access token url"
     value = "https://${aws_cognito_user_pool_domain.user_pool_domain.domain}.auth.${var.region}.amazoncognito.com/oauth2/token"
