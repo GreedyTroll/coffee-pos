@@ -89,76 +89,80 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
 
   return (
     <div className="order-component">
-      <div className="order-summary">
-        <h3>Order Summary</h3>
-        <div className="payment-method">
-          <label htmlFor="payment-method">Payment Method </label>
-          <select
-            id="payment-method"
-            value={selectedPaymentMethod}
-            onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-          >
-            {paymentMethods.map((method, index) => (
-              <option key={index} value={method}>{method}</option>
+      <div className="order-wrapper">
+        <div className="order-summary">
+          <h3>Order Summary</h3>
+          <div className="payment-method">
+            <label htmlFor="payment-method">Payment Method </label>
+            <select
+              id="payment-method"
+              value={selectedPaymentMethod}
+              onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+            >
+              {paymentMethods.map((method, index) => (
+                <option key={index} value={method}>{method}</option>
+              ))}
+            </select>
+          </div>
+          <div className="order-type">
+            <label>
+              <input
+                type="radio"
+                value="Dine-in"
+                checked={orderType === 'Dine-in'}
+                onChange={(e) => setOrderType(e.target.value)}
+              />
+              Dine-in
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="Take-out"
+                checked={orderType === 'Take-out'}
+                onChange={(e) => setOrderType(e.target.value)}
+              />
+              Take-out
+            </label>
+          </div>
+          <ul>
+            {order.map((item, index) => (
+              <li key={index}>
+                <span className="item-name">{item.product_name}</span>
+                <span className="item-quantity">{item.quantity}</span>
+                <div className="item-controls">
+                  <button className="quantity-button" onClick={() => handleDecreaseQuantity(index)}>-</button>
+                  <button className="quantity-button" onClick={() => handleIncreaseQuantity(index)}>+</button>
+                  <FaTrash className="trash-icon" onClick={() => handleRemoveItem(index)} />
+                </div>
+              </li>
             ))}
-          </select>
+          </ul>
+          <div className="total-price">
+            Total: ${calculateTotalPrice().toFixed(0)}
+          </div>
         </div>
-        <div className="order-type">
-          <label>
-            <input
-              type="radio"
-              value="Dine-in"
-              checked={orderType === 'Dine-in'}
-              onChange={(e) => setOrderType(e.target.value)}
-            />
-            Dine-in
-          </label>
-          <label>
-            <input
-              type="radio"
-              value="Take-out"
-              checked={orderType === 'Take-out'}
-              onChange={(e) => setOrderType(e.target.value)}
-            />
-            Take-out
-          </label>
-        </div>
-        <ul>
-          {order.map((item, index) => (
-            <li key={index}>
-              <span className="item-name">{item.product_name}</span>
-              <span className="item-quantity">{item.quantity}</span>
-              <div className="item-controls">
-                <button className="quantity-button" onClick={() => handleDecreaseQuantity(index)}>-</button>
-                <button className="quantity-button" onClick={() => handleIncreaseQuantity(index)}>+</button>
-                <FaTrash className="trash-icon" onClick={() => handleRemoveItem(index)} />
+        <div className="order-content">
+          <div className="tabs">
+            {categories.map(categoryId => (
+              <button
+                key={categoryId}
+                className={`tab ${activeTab === categoryId ? 'active' : ''}`}
+                onClick={() => setActiveTab(categoryId)}
+              >
+                {menu.find(item => item.categoryid === categoryId)?.categoryname}
+              </button>
+            ))}
+          </div>
+          <div className="items">
+            {menu.filter(item => item.categoryid === activeTab && item.productid).map(item => (
+              <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
+                {item.productname}  ${Math.round(item.price)}
               </div>
-            </li>
-          ))}
-        </ul>
-        <div className="total-price">
-          Total: ${calculateTotalPrice().toFixed(0)}
+            ))}
+          </div>
         </div>
       </div>
-      <div className="order-content">
-        <div className="tabs">
-          {categories.map(categoryId => (
-            <button
-              key={categoryId}
-              className={`tab ${activeTab === categoryId ? 'active' : ''}`}
-              onClick={() => setActiveTab(categoryId)}
-            >
-              {menu.find(item => item.categoryid === categoryId)?.categoryname}
-            </button>
-          ))}
-        </div>
-        <div className="items">
-          {menu.filter(item => item.categoryid === activeTab && item.productid).map(item => (
-            <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
-              {item.productname}  ${Math.round(item.price)}
-            </div>
-          ))}
-        </div>
+      <div className="order-actions">
         <button className="send-button" onClick={handleSendOrder}>Send Order</button>
       </div>
     </div>
