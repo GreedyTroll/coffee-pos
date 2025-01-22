@@ -3,6 +3,7 @@ from common.models import db, Seat
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from common.models import model_to_dict
+from common.wrap import token_required
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -10,12 +11,14 @@ logger.setLevel(logging.INFO)
 seats_bp = Blueprint('seats', __name__)
 
 @seats_bp.route('', methods=['GET'])
+@token_required
 def getSeats():
     seats = Seat.query.all()
     seats_dict = [model_to_dict(model) for model in seats]
     return jsonify(seats_dict)
 
 @seats_bp.route('/add', methods=['POST'])
+@token_required
 def addSeat():
     if request.is_json:
         data = request.get_json()
@@ -43,6 +46,7 @@ def addSeat():
     return {'success': True, 'seat_id': new_seat.seatid}, 200
 
 @seats_bp.route('/<string:id>', methods=['DELETE'])
+@token_required
 def deleteSeat(id):
     if not id:
         return {'error': 'no id provided'}, 400
