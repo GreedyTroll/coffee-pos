@@ -1,0 +1,5 @@
+# filepath: /home/derekwu/projects/coffee-pos/server/.dockerignore
+__pycache__
+*.pyc
+.git
+venv
