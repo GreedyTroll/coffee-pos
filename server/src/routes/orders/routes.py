@@ -3,9 +3,9 @@ from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod
 from sqlalchemy.exc import SQLAlchemyError
 
 from datetime import datetime, timezone, timedelta
-# from datetime import timezone, timedelta
 import logging
 from common.models import model_to_dict
+from common.wrap import token_required
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -13,6 +13,7 @@ logger.setLevel(logging.INFO)
 orders_bp = Blueprint('orders', __name__)
 
 @orders_bp.route('',methods=['GET'])
+@token_required
 def orders():
     paid = request.args.get('paid')
     amount_min = request.args.get('amount_min')
@@ -67,6 +68,7 @@ def orders():
     return jsonify(orders_dict)
 
 @orders_bp.route('/new', methods=['POST'])
+@token_required
 def newOrder():
     if request.is_json:
         data = request.get_json()
@@ -113,6 +115,7 @@ def newOrder():
     return {'success': True, 'order_id': new_order.orderid}, 200
 
 @orders_bp.route('/<int:id>', methods=['PUT'])
+@token_required
 def updateOrder(id):
     if not id:
         return {'error': 'no order id provided'}, 400
@@ -164,6 +167,7 @@ def updateOrder(id):
     return {'success': True}, 200
 
 @orders_bp.route('/delivered/<int:orderitem_id>', methods=['PUT'])
+@token_required
 def markDelivered(orderitem_id):
     if not orderitem_id:
         return {'error': 'no order item id provided'}, 400

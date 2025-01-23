@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import useAxios from '../hooks/useAxiosAuth';
 import { FaTrash } from 'react-icons/fa';
 import './Order.css';
 
@@ -12,6 +12,8 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [orderType, setOrderType] = useState(partyId ? 'Dine-in' : 'Take-out'); // Set default orderType
+
+  const axios = useAxios();
 
   useEffect(() => {
     axios.get(`${apiUrl}/menu`)

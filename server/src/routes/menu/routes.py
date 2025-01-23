@@ -3,6 +3,7 @@ from common.models import db, Item, Category, Discount, DiscountCombination
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from common.models import model_to_dict
+from common.wrap import token_required
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -28,6 +29,7 @@ def menu():
     return jsonify(menu)
 
 @menu_bp.route('/addItem', methods=['POST'])
+@token_required
 def addItem():
     if request.is_json:
         data = request.get_json()
@@ -73,6 +75,7 @@ def addItem():
     return {'category': category.categoryid, 'item': new_item.productid, 'success': True}, 200
 
 @menu_bp.route('/item/<int:id>', methods=['DELETE'])
+@token_required
 def deleteItem(id):
     if not id:
         return {'error': 'no id provided'}, 400
@@ -92,6 +95,7 @@ def deleteItem(id):
     return {'success': True}, 200
 
 @menu_bp.route('/addCategory', methods=['POST'])
+@token_required
 def addCategory():
     if request.is_json:
         data = request.get_json()
@@ -119,6 +123,7 @@ def addCategory():
     return {'success': True}, 200
 
 @menu_bp.route('/category/<int:id>', methods=['DELETE'])
+@token_required
 def deleteCategory(id):
     if not id:
         return {'error': 'no id provided'}, 400
@@ -138,6 +143,7 @@ def deleteCategory(id):
     return {'success': True}, 200
 
 @menu_bp.route('/addDiscount', methods=['POST'])
+@token_required
 def addDiscount():
     if request.is_json:
         data = request.get_json()
@@ -176,6 +182,7 @@ def addDiscount():
     return {'success': True}, 200
 
 @menu_bp.route('/discount/<int:id>', methods=['DELETE'])
+@token_required
 def deleteDiscount(id):
     if not id:
         return {'error': 'no id provided'}, 400
