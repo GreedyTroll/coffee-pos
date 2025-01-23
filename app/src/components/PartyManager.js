@@ -1,4 +1,4 @@
-import useAxios from '../hooks/useAxios';
+import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
 import './PartyManager.css';
 import './Route.css';
@@ -7,7 +7,6 @@ import OrderTickets from './OrderTickets'; // Import OrderTickets
 import {
   Paper,
   TextField,
-  Button,
   IconButton // Import IconButton
 } from '@mui/material';
 import { red } from '@mui/material/colors';
