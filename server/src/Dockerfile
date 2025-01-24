@@ -18,11 +18,13 @@ COPY .env /app/.env
 # Install any needed packages specified in requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
 
 # Define environment variable
 ENV FLASK_APP=run.py
+ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
 
 # Run app.py when the container launches
-CMD ["flask", "run", "--host=0.0.0.0", "--port=80"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]
