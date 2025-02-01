@@ -5,7 +5,7 @@ The backend of the project is located in `server/src/`
 
 ## Backend Deployment
 ### Dependencies
-Serveral env variables need to be set in order to execute the backend code. These variables include:
+Several env variables need to be set in order to execute the backend code. These variables include:
 - DATABASE_URL="postgresql+psycopg2://<root_user>:<root_password>@<db_endpoint>/CoffeeShopPOS"
 - AWS_REGION
 - COGNITO_USER_POOL_ID
