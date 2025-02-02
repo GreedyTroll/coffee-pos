@@ -9,3 +9,7 @@ init_env.sh
 # terraform
 *.terraform*
 *.tfstate*
+
+# nginx
+*.crt
+*.key
