@@ -25,9 +25,27 @@ const OrderTickets = ({ onOrderTicketClick }) => {
     // Sort orders by orderdate
     const sortedOrders = orders.sort((a, b) => new Date(a.orderdate) - new Date(b.orderdate));
 
-    const handlePreparedChange = async (orderId, orderItemId, prepared) => {
-        try {
-            await axios.put(`${apiUrl}/orders/delivered/${orderItemId}`);
+    const handlePreparedChange = (orderId, orderItemId, Delivered) => {
+        // Optimistically update the state
+        setOrders(prevOrders =>
+            prevOrders
+                .map(order =>
+                    order.orderid === orderId
+                        ? {
+                            ...order,
+                            items: order.items.map(item =>
+                                item.OrderItemID === orderItemId ? { ...item, Delivered } : item
+                            ),
+                          }
+                        : order
+                )
+        );
+
+        // Send the request to the backend
+        axios.put(`${apiUrl}/orders/delivered/${orderItemId}`).catch(error => {
+            console.error('Error updating item preparation status:', error);
+
+            // Revert the optimistic update if the request fails
             setOrders(prevOrders =>
                 prevOrders
                     .map(order =>
@@ -35,15 +53,13 @@ const OrderTickets = ({ onOrderTicketClick }) => {
                             ? {
                                 ...order,
                                 items: order.items.map(item =>
-                                    item.OrderItemID === orderItemId ? { ...item, prepared } : item
+                                    item.OrderItemID === orderItemId ? { ...item, Delivered: !Delivered } : item
                                 ),
                               }
                             : order
                     )
             );
-        } catch (error) {
-            console.error('Error updating item preparation status:', error);
-        }
+        });
     };
 
     const handleDiscardOrder = async (orderId) => {
@@ -74,15 +90,15 @@ const OrderTickets = ({ onOrderTicketClick }) => {
                                 <li key={item.OrderItemID} style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <span>{item.ProductName} - {item.Quantity}</span>
                                     <button
-                                        className={`button ${item.prepared ? 'prepared' : ''}`}
-                                        onClick={() => handlePreparedChange(order.orderid, item.OrderItemID, !item.prepared)}
+                                        className={`button ${item.Delivered ? 'prepared' : ''}`}
+                                        onClick={() => handlePreparedChange(order.orderid, item.OrderItemID, !item.Delivered)}
                                     >
-                                        {item.prepared ? 'Prepared' : 'Preparing...'}
+                                        {item.Delivered ? 'Prepared' : 'Preparing...'}
                                     </button>
                                 </li>
                             ))}
                         </ul>
-                        {order.items.every(item => item.prepared) && (
+                        {order.items.every(item => item.Delivered) && (
                             <button className="button discard" onClick={() => handleDiscardOrder(order.orderid)}>
                                 Complete!
                             </button>
