@@ -1,0 +1,73 @@
+---
+- name: Deploy coffee-pos project
+  hosts: target_server
+  become: yes
+  gather_facts: no
+  vars:
+    project_dir: /Users/derekwu/Projects/coffee-pos 
+    deploy_dir: /var/www/coffee-pos
+
+  pre_tasks:
+    - name: Ensure Python 3.8 is installed
+      raw: |
+        yum update -y
+        amazon-linux-extras install -y python3.8
+        ln -sf /usr/bin/python3.8 /usr/bin/python3
+      become: yes
+    - name: Gather facts
+      setup:
+
+  tasks:
+    - name: Ensure Docker is installed
+      raw: |
+        amazon-linux-extras install -y docker
+        service docker start
+        usermod -a -G docker ec2-user
+      become: yes
+
+    - name: Install docker-compose
+      raw: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        if [ ! -L /usr/bin/docker-compose ]; then ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose; fi
+      become: yes
+
+    - name: Create deploy directory if it doesn't exist
+      file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy project files to target server
+      synchronize:
+        src: "{{ project_dir }}/"
+        dest: "{{ deploy_dir }}/"
+        delete: yes
+        rsync_opts:
+          - "--verbose"
+          - "--progress"
+          - "--exclude=node_modules"
+          - "--exclude=server/src/venv"
+          - "--exclude=ansible"
+          - "--exclude=db"
+          - "--exclude=terraform"
+          - "--exclude=.git"
+
+    - name: Build Docker images
+      command: docker-compose -f {{ deploy_dir }}/docker-compose.yml build
+      args:
+        chdir: "{{ deploy_dir }}"
+
+    - name: Run Docker containers
+      command: docker-compose -f {{ deploy_dir }}/docker-compose.yml up -d
+      args:
+        chdir: "{{ deploy_dir }}"
+
+  handlers:
+    - name: Start Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
