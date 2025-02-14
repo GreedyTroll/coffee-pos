@@ -161,35 +161,48 @@ const PartyManager = () => {
     }
   };
 
-  const handleSaveParty = async (resetEditingParty = true) => {
+  const handleSaveParty = (resetEditingParty = true) => {
     if (!editingParty) return;
-    try {
-      // Update party info
-      await axios.put(`${apiUrl}/parties/${editingParty.partyid}`, editingParty);
 
-      // Assign seats to the party
-      await axios.post(`${apiUrl}/parties/assignSeats/${editingParty.partyid}`, { seat_ids: editingPartySeats });
+    // Update party info
+    axios.put(`${apiUrl}/parties/${editingParty.partyid}`, editingParty)
+      .catch(error => console.error('Error updating party info', error));
 
-      fetchParties();
-      fetchSeats();
-      if (resetEditingParty) {
-        setEditingParty(null);
+    // Assign seats to the party
+    axios.post(`${apiUrl}/parties/assignSeats/${editingParty.partyid}`, { seat_ids: editingPartySeats })
+      .catch(error => console.error('Error assigning seats to party', error));
+
+    // Update local state
+    setParties(prevParties => prevParties.map(p => p.partyid === editingParty.partyid ? editingParty : p));
+    setSeats(prevSeats => prevSeats.map(seat => {
+      if (editingPartySeats.includes(seat.seatid)) {
+        return { ...seat, partyid: editingParty.partyid };
+      } else if (seat.partyid === editingParty.partyid) {
+        return { ...seat, partyid: null };
       }
-    } catch (error) {
-      console.error('Error saving party', error);
+      return seat;
+    }));
+
+    if (resetEditingParty) {
+      setEditingParty(null);
     }
   };
 
-  const handleDeactivateParty = async (partyId) => {
-    try {
-      await axios.delete(`${apiUrl}/parties/${partyId}`);
-      fetchParties();
-      fetchSeats();
-      fetchPartyOrders();
-      setEditingParty(null);
-    } catch (error) {
-      console.error('Error deactivating party', error);
-    }
+  const handleDeactivateParty = (partyId) => {
+    axios.delete(`${apiUrl}/parties/${partyId}`)
+      .catch(error => console.error('Error deactivating party', error));
+
+    // Update local state instead of fetching again
+    setParties(prevParties => prevParties.filter(p => p.partyid !== partyId));
+    setSeats(prevSeats => prevSeats.map(seat => seat.partyid === partyId ? { ...seat, partyid: null } : seat));
+    setPartyOrders(prevOrders => {
+      const updatedOrders = { ...prevOrders };
+      delete updatedOrders[partyId];
+      return updatedOrders;
+    });
+    setOrderTicketsUpdated(!orderTicketsUpdated)
+
+    setEditingParty(null);
   };
 
   const handleCreatePartyWithSelectedSeats = async () => {
@@ -197,15 +210,18 @@ const PartyManager = () => {
       const newPartyResponse = await axios.post(`${apiUrl}/parties/add`, newParty);
       const newPartyId = newPartyResponse.data.party_id;
 
-      await axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats });
+      axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats })
+        .catch(error => console.error('Error assigning seats to new party', error));
 
-      fetchParties();
-      fetchSeats();
+      // Update local state instead of fetching again
+      const newPartyData = { partyid: newPartyId, partysize: selectedSeats.length, notes: newParty.notes };
+      setParties(prevParties => [...prevParties, newPartyData]);
+      setSeats(prevSeats => prevSeats.map(seat => selectedSeats.includes(seat.seatid) ? { ...seat, partyid: newPartyId } : seat));
+
       setNewParty({ partysize: '', notes: '' });
       setSelectedSeats([]);
 
       // Automatically enter edit mode for the new party
-      const newPartyData = { partyid: newPartyId, partysize: selectedSeats.length, notes: newParty.notes };
       setEditingParty(newPartyData);
       setEditingPartySeats(selectedSeats);
     } catch (error) {
