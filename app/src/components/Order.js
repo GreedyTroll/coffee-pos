@@ -45,15 +45,12 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   };
 
   const handleSendOrder = () => {
+    onOrderSent(); // Trigger onOrderSent immediately
     axios.post(`${apiUrl}/orders/new`, {
       party_id: partyId,
       payment_method: selectedPaymentMethod,
       order_type: orderType,
       items: order
-    })
-    .then(response => {
-      console.log('Order sent:', response);
-      onOrderSent();
     })
     .catch(error => console.error('Error sending order:', error));
   };

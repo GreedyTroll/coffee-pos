@@ -11,7 +11,7 @@ Using postgresql docker image to test db.
 `-p` expose port
 
 ## Connect to the PostgreSQL database container from terminal:
-`docker exec -it driver-school-db psql -U postgres`
+`docker exec -it <DB_NAME> psql -U postgres`
 
 # Running Scripts
 How to run the db scripts

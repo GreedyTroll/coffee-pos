@@ -1,11 +1,8 @@
 resource "aws_cognito_user_pool" "user_pool" {
   name = "app_user_pool"
   password_policy {
-    minimum_length = 8
-    require_lowercase = true 
+    minimum_length = 6
     require_numbers = true
-    require_symbols = true
-    require_uppercase = true
   }
 }
 
@@ -19,8 +16,8 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
   allowed_oauth_scopes = ["email", "openid", "profile"]
   supported_identity_providers = ["COGNITO"]
   explicit_auth_flows = ["USER_PASSWORD_AUTH"]
-  callback_urls = ["http://localhost:3000/"]
-  logout_urls = ["http://localhost:3000/"]
+  callback_urls = ["http://localhost:3000/","https://${data.terraform_remote_state.ec2.outputs.ec2_ip}/"]
+  logout_urls = ["http://localhost:3000/","https://${data.terraform_remote_state.ec2.outputs.ec2_ip}/"]
 }
 
 resource "aws_cognito_user_pool_domain" "user_pool_domain" {

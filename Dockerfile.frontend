@@ -1,0 +1,26 @@
+# Stage 1: Build the application
+FROM node:16 AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY app/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code
+COPY app/ .
+
+# Build the application
+RUN npm run build
+
+# Install serve globally
+RUN npm install -g serve
+
+# Expose port 3000 for the frontend application
+EXPOSE 3000
+
+# Start the application using serve
+CMD ["serve", "-s", "build"]

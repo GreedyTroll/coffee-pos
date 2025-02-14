@@ -1,6 +1,8 @@
+python-dotenv
 flask
 flask_sqlalchemy
 flask_cors
 psycopg2
 pytz
 pyjwt
+cryptography

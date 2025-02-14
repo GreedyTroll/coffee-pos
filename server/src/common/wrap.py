@@ -3,6 +3,9 @@ import os
 from flask import request, jsonify
 import jwt
 from jwt import PyJWKClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def verify_token(token):
     keys_url = f"https://cognito-idp.{os.getenv('AWS_REGION')}.amazonaws.com/{os.getenv('COGNITO_USER_POOL_ID')}/.well-known/jwks.json"
