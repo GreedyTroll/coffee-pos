@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from common.models import db, Party, Seat
 from sqlalchemy.exc import SQLAlchemyError
 import json
-
 import pytz
 from datetime import datetime
 import logging
@@ -10,7 +9,6 @@ from common.models import model_to_dict
 from common.wrap import token_required
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 parties_bp = Blueprint('parties', __name__)
 
@@ -43,7 +41,7 @@ def addParty():
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
     
     return {'success': True, 'party_id': new_party.partyid}, 200
@@ -75,7 +73,7 @@ def updateParty(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
@@ -105,7 +103,7 @@ def deactivateParty(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True, 'released_seats': json.dumps(released_seats)}, 200
@@ -136,7 +134,7 @@ def assignSeats(party_id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200

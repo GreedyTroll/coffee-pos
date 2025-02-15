@@ -1,14 +1,12 @@
 from flask import Blueprint, request, jsonify
 from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party, Seat  # Import Seat model
 from sqlalchemy.exc import SQLAlchemyError
-
 from datetime import datetime, timezone, timedelta
 import logging
 from common.models import model_to_dict
 from common.wrap import token_required
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 orders_bp = Blueprint('orders', __name__)
 
@@ -109,7 +107,7 @@ def newOrder():
         db.session.commit() # makes all the changes in the current Orders permanent (cannot be rolled back)
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
     
     return {'success': True, 'order_id': new_order.orderid}, 200
@@ -161,7 +159,7 @@ def updateOrder(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
@@ -181,7 +179,7 @@ def markDelivered(orderitem_id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
