@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+
+  fluent-bit:
+    image: fluent/fluent-bit:latest
+    ports:
+      - "24224:24224"
+    volumes:
+      - /etc/fluent-bit/fluent-bit.conf:/etc/fluent-bit/fluent-bit.conf
+      - /etc/fluent-bit/parser.conf:/etc/fluent-bit/parser.conf
+    command: >
+      /fluent-bit/bin/fluent-bit -c /etc/fluent-bit/fluent-bit.conf
+    networks:
+      - coffee-network
+
   frontend:
     build:
       context: .
@@ -22,6 +35,13 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - coffee-network
+    depends_on:
+      - fluent-bit
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: backend
 
   nginx:
     image: nginx:alpine
