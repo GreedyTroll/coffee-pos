@@ -2,18 +2,6 @@ version: '3.8'
 
 services:
 
-  fluent-bit:
-    image: fluent/fluent-bit:latest
-    ports:
-      - "24224:24224"
-    volumes:
-      - /etc/fluent-bit/fluent-bit.conf:/etc/fluent-bit/fluent-bit.conf
-      - /etc/fluent-bit/parser.conf:/etc/fluent-bit/parser.conf
-    command: >
-      /fluent-bit/bin/fluent-bit -c /etc/fluent-bit/fluent-bit.conf
-    networks:
-      - coffee-network
-
   frontend:
     build:
       context: .
@@ -35,13 +23,6 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - coffee-network
-    depends_on:
-      - fluent-bit
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: backend
 
   nginx:
     image: nginx:alpine
@@ -53,27 +34,6 @@ services:
       - ./nginx/nginx.key:/etc/ssl/private/nginx.key
     depends_on:
       - frontend
-    networks:
-      - coffee-network
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ports:
-      - "9200:9200"
-    networks:
-      - coffee-network
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.10.1
-    ports:
-      - "5601:5601"
-    #environment:
-    #  ELASTICSEARCH_URL: http://elasticsearch:9200
-    depends_on:
-      - elasticsearch
     networks:
       - coffee-network
 

@@ -71,20 +71,6 @@
         group: root
         mode: '0644'
 
-    - name: Create Fluent-bit congifuration directory if it doesn't exist
-      file:
-        path: "/etc/fluent-bit"
-        state: directory
-        owner: root
-        group: root
-        mode: '0755'
-
-    - name: Copy Fluent-bit configuration files to target server
-      synchronize:
-        src: "{{ project_dir }}/ansible/etc/fluent-bit/"
-        dest: "/etc/fluent-bit/"
-        delete: yes
-
     - name: Stop Docker containers
       command: docker-compose -f {{ deploy_dir }}/docker-compose.yml down
       args:
