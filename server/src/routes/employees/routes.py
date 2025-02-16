@@ -5,7 +5,6 @@ import logging
 from common.models import model_to_dict
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 employees_bp = Blueprint('employees', __name__)
 
@@ -36,7 +35,7 @@ def addEmployee():
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
     
     return {'success': True}, 200
@@ -55,7 +54,7 @@ def deleteEmployee(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200

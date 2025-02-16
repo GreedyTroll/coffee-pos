@@ -6,7 +6,6 @@ from common.models import model_to_dict
 from common.wrap import token_required
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 seats_bp = Blueprint('seats', __name__)
 
@@ -40,7 +39,7 @@ def addSeat():
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
     
     return {'success': True, 'seat_id': new_seat.seatid}, 200
@@ -60,7 +59,7 @@ def deleteSeat(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.info(f'Error occurred: {e}')
+        logger.error('{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
