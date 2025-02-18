@@ -39,7 +39,7 @@ const AppContent = () => {
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<Menu isAuthenticated={auth.isAuthenticated} />} />
             <Route path="/management" element={<ProtectedRoute component={PartyManager} />} />
-            <Route path="/stats" element={<ProtectedRoute component={StatsComponent} />} />
+            <Route path="/stats" element={<ProtectedRoute component={StatsComponent} requiredGroup="manager" />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </div>
