@@ -22,6 +22,7 @@ const StatsComponent = () => {
   const [orderTypeStats, setOrderTypeStats] = useState([]);
   const [paymentMethodStats, setPaymentMethodStats] = useState([]);
   const [productStats, setProductStats] = useState([]);
+  const [displayQuantity, setDisplayQuantity] = useState(false);  // State for toggle
 
   useEffect(() => {
     fetchStats();
@@ -112,8 +113,8 @@ const StatsComponent = () => {
   const productData = {
     labels: productStats.map(stat => stat.productname),
     datasets: [{
-      label: 'Total Revenue by Product',
-      data: productStats.map(stat => stat.total_revenue),
+      label: displayQuantity ? 'Total Quantity by Product' : 'Total Revenue by Product',
+      data: displayQuantity ? productStats.map(stat => stat.total_quantity) : productStats.map(stat => stat.total_revenue),
       backgroundColor: generateColors(productStats.length),
     }]
   };
@@ -121,6 +122,18 @@ const StatsComponent = () => {
   return (
     <div>
       <div className="controls-container">
+        <div className="toggle-container">
+          <span className="toggle-label">Revenue</span>
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={displayQuantity}
+              onChange={() => setDisplayQuantity(!displayQuantity)}
+            />
+            <span className="slider round"></span>
+          </label>
+          <span className="toggle-label">Quantity</span>
+        </div>
         <div className="date-picker-container">
           <DatePicker
             selected={dateStart}
@@ -231,7 +244,7 @@ const StatsComponent = () => {
                 datalabels: {
                   display: true,
                   color: 'black',
-                  formatter: (value) => `$${Number(value).toFixed(0)}`,
+                  formatter: (value) => displayQuantity ? `${Number(value).toFixed(0)}` : `$${Number(value).toFixed(0)}`,
                 },
               },
             }}

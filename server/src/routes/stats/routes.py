@@ -94,20 +94,13 @@ def stats():
 def statsByProduct():
     date_start = request.args.get('date_start')
     date_end = request.args.get('date_end')
-    quantity = request.args.get('quantity', 'false').lower() == 'true'
     
-    if quantity:
-        query_product = db.session.query(
-            Item.productid,
-            Item.productname,
-            func.sum(OrderItem.quantity).label('total_quantity')
-        ).join(OrderItem, Item.productid == OrderItem.productid).join(Order, Order.orderid == OrderItem.orderid).group_by(Item.productid, Item.productname)
-    else:
-        query_product = db.session.query(
-            Item.productid,
-            Item.productname,
-            func.sum(OrderItem.quantity * Item.price).label('total_revenue')
-        ).join(OrderItem, Item.productid == OrderItem.productid).join(Order, Order.orderid == OrderItem.orderid).group_by(Item.productid, Item.productname)
+    query_product = db.session.query(
+        Item.productid,
+        Item.productname,
+        func.sum(OrderItem.quantity).label('total_quantity'),
+        func.sum(OrderItem.quantity * Item.price).label('total_revenue')
+    ).join(OrderItem, Item.productid == OrderItem.productid).join(Order, Order.orderid == OrderItem.orderid).group_by(Item.productid, Item.productname)
     
     if date_start:
         date_start = datetime.fromisoformat(date_start.replace('Z', '+00:00'))
@@ -119,12 +112,9 @@ def statsByProduct():
         date_end = datetime.fromisoformat(date_end.replace('Z', '+00:00'))
         query_product = query_product.filter(Order.orderdate <= date_end)
 
-    if quantity:
-        query_product = query_product.order_by(func.sum(OrderItem.quantity).desc()).limit(10)
-        total_quantity = db.session.query(func.sum(OrderItem.quantity)).join(Order, Order.orderid == OrderItem.orderid).scalar()
-    else:
-        query_product = query_product.order_by(func.sum(OrderItem.quantity * Item.price).desc()).limit(10)
-        total_revenue = db.session.query(func.sum(Order.totalamount)).scalar()
+    query_product = query_product.order_by(func.sum(OrderItem.quantity * Item.price).desc()).limit(10)
+    total_quantity = db.session.query(func.sum(OrderItem.quantity)).join(Order, Order.orderid == OrderItem.orderid).scalar()
+    total_revenue = db.session.query(func.sum(Order.totalamount)).scalar()
 
     stats_product = query_product.all()
     
@@ -132,17 +122,15 @@ def statsByProduct():
         'product': []
     }
     
-    for productid, productname, total in stats_product:
+    for productid, productname, total_quantity, total_revenue in stats_product:
         entry = {
             'productid': productid,
-            'productname': productname
+            'productname': productname,
+            'total_quantity': total_quantity,
+            'total_revenue': total_revenue,
+            'quantity_percentage': (total_quantity / total_quantity) * 100 if total_quantity else 0,
+            'revenue_percentage': (total_revenue / total_revenue) * 100 if total_revenue else 0
         }
-        if quantity:
-            entry['total_quantity'] = total
-            entry['percentage'] = (total / total_quantity) * 100 if total_quantity else 0
-        else:
-            entry['total_revenue'] = total
-            entry['percentage'] = (total / total_revenue) * 100 if total_revenue else 0
         stats_dict['product'].append(entry)
     
     return jsonify(stats_dict)
