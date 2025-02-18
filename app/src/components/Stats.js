@@ -6,6 +6,11 @@ import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
 import 'chartjs-adapter-date-fns';  // Import the date adapter
 import './Stats.css';  // Import the CSS file
+import ChartDataLabels from 'chartjs-plugin-datalabels';  // Import the plugin
+import { Chart } from 'chart.js';  // Import Chart.js
+
+// Register the plugin
+Chart.register(ChartDataLabels);
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -75,11 +80,11 @@ const StatsComponent = () => {
     datasets: orderTypeStats.reduce((acc, stat, index) => {
       const dataset = acc.find(d => d.label === stat.ordertype);
       if (dataset) {
-        dataset.data.push({ x: new Date(stat.bucket), y: stat.total_revenue });
+        dataset.data.push({ x: formatBucketLabel(stat.bucket), y: stat.total_revenue });
       } else {
         acc.push({
           label: stat.ordertype,
-          data: [{ x: new Date(stat.bucket), y: stat.total_revenue }],
+          data: [{ x: formatBucketLabel(stat.bucket), y: stat.total_revenue }],
           backgroundColor: generateColors(orderTypeStats.length)[index],
         });
       }
@@ -92,11 +97,11 @@ const StatsComponent = () => {
     datasets: paymentMethodStats.reduce((acc, stat, index) => {
       const dataset = acc.find(d => d.label === stat.paymentmethod);
       if (dataset) {
-        dataset.data.push({ x: new Date(stat.bucket), y: stat.total_revenue });
+        dataset.data.push({ x: formatBucketLabel(stat.bucket), y: stat.total_revenue });
       } else {
         acc.push({
           label: stat.paymentmethod,
-          data: [{ x: new Date(stat.bucket), y: stat.total_revenue }],
+          data: [{ x: formatBucketLabel(stat.bucket), y: stat.total_revenue }],
           backgroundColor: generateColors(paymentMethodStats.length)[index],
         });
       }
@@ -152,6 +157,13 @@ const StatsComponent = () => {
             data={orderTypeData}
             options={{
               maintainAspectRatio: false,
+              plugins: {
+                datalabels: {
+                  display: true,
+                  color: 'black',
+                  formatter: (value) => `$${Number(value.y).toFixed(0)}`,
+                },
+              },
               scales: {
                 x: {
                   type: 'time',
@@ -180,6 +192,13 @@ const StatsComponent = () => {
             data={paymentMethodData}
             options={{
               maintainAspectRatio: false,
+              plugins: {
+                datalabels: {
+                  display: true,
+                  color: 'black',
+                  formatter: (value) => `$${Number(value.y).toFixed(0)}`,
+                },
+              },
               scales: {
                 x: {
                   type: 'time',
@@ -204,7 +223,19 @@ const StatsComponent = () => {
           />
         </div>
         <div className="chart">
-          <Bar data={productData} options={{ maintainAspectRatio: false }} />
+          <Bar
+            data={productData}
+            options={{
+              maintainAspectRatio: false,
+              plugins: {
+                datalabels: {
+                  display: true,
+                  color: 'black',
+                  formatter: (value) => `$${Number(value).toFixed(0)}`,
+                },
+              },
+            }}
+          />
         </div>
       </div>
     </div>
