@@ -1,0 +1,124 @@
+.date-picker-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;  /* Align to the center vertically */
+  gap: 10px;
+}
+
+.date-picker-container .react-datepicker-wrapper {
+  width: 45%;
+}
+
+.date-picker-container .react-datepicker__input-container input {
+  height: 40px;  /* Increase the height of the text box */
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-container .chart {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 200px;  /* Reduce the height of the charts */
+}
+
+.controls-container {
+  display: flex;
+  justify-content: flex-end;  /* Align to the right */
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;  /* Add padding to the left and right */
+}
+
+.refresh-button, .clear-button {
+  padding: 10px 20px;
+  background-color: #d33e89;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.refresh-button:hover, .clear-button:hover {
+  background-color: #ff1493;
+}
+
+.bucket-size-selector {
+  height: 38px; /* Adjust this value to match the height of the date picker */
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffb6c1;  /* Light pink color */
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #69b2ff;  /* Vibrant pink color */
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px;
+}
+
+.toggle-label {
+  font-size: 18px;
+  color: #ffffff;  /* Vibrant pink color */
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;  /* Playful font */
+  text-shadow: 2px 2px 4px #ff1493, 0 0 1em #ff69b4, 0 0 0.2em #ff69b4;  /* Add outline and contrast */
+}

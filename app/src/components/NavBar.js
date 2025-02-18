@@ -21,6 +21,8 @@ const Navbar = () => {
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
 
+  const userGroups = auth.user?.profile?.['cognito:groups'] || [];
+
   return (
     <nav className="navbar">
       <div className="navContainer">
@@ -30,6 +32,9 @@ const Navbar = () => {
           {auth.isAuthenticated ? (
             <>
               <li className="navItem"><Link to="/management" className="navButton">Management</Link></li>
+              {userGroups.includes('manager') && (
+                <li className="navItem"><Link to="/stats" className="navButton">Stats</Link></li>
+              )}
               <li className="navItem"><a onClick={handleLogout} className="navButton" >Logout</a></li>
             </>
           ) : (

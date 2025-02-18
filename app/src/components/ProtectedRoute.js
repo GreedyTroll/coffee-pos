@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from 'react-oidc-context';
 
-const ProtectedRoute = ({ component: Component }) => {
+const ProtectedRoute = ({ component: Component, requiredGroup }) => {
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,11 +16,13 @@ const ProtectedRoute = ({ component: Component }) => {
     return <div>Loading...</div>; // Or a spinner, etc.
   }
 
-  return auth.isAuthenticated ? (
-    <Component />
-  ) : (
-    <Navigate to="/login" />
-  );
+  const userGroups = auth.user?.profile?.['cognito:groups'] || [];
+
+  if (!auth.isAuthenticated || (requiredGroup && !userGroups.includes(requiredGroup))) {
+    return <Navigate to="/login" />;
+  }
+
+  return <Component />;
 };
 
 export default ProtectedRoute;
