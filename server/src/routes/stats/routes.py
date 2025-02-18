@@ -12,7 +12,7 @@ logger = logging.getLogger()
 stats_bp = Blueprint('stats', __name__)
 
 @stats_bp.route('',methods=['GET'])
-#@token_required
+@token_required
 def stats():
     date_start = request.args.get('date_start')
     date_end = request.args.get('date_end')
@@ -90,7 +90,7 @@ def stats():
     return jsonify(stats_dict)
 
 @stats_bp.route('/by-product', methods=['GET'])
-#@token_required
+@token_required
 def statsByProduct():
     date_start = request.args.get('date_start')
     date_end = request.args.get('date_end')
