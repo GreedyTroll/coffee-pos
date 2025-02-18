@@ -1,0 +1,53 @@
+.date-picker-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;  /* Align to the center vertically */
+  gap: 10px;
+}
+
+.date-picker-container .react-datepicker-wrapper {
+  width: 45%;
+}
+
+.date-picker-container .react-datepicker__input-container input {
+  height: 40px;  /* Increase the height of the text box */
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-container .chart {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 200px;  /* Reduce the height of the charts */
+}
+
+.controls-container {
+  display: flex;
+  justify-content: flex-end;  /* Align to the right */
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;  /* Add padding to the left and right */
+}
+
+.refresh-button, .clear-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.refresh-button:hover, .clear-button:hover {
+  background-color: #0056b3;
+}
+
+.bucket-size-selector {
+  height: 38px; /* Adjust this value to match the height of the date picker */
+}
