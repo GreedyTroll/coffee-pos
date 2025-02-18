@@ -1,24 +1,31 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from 'react-oidc-context';
 import './NavBar.css';
 
 const Navbar = () => {
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = () => {
     auth.signinRedirect();
   };
 
   const handleLogout = () => {
-    // Remove the user from local session
-    auth.removeUser();
+    // Redirect to the root route before logging out
+    navigate('/', { replace: true });
 
-    // Then redirect to Cognito’s logout endpoint
-    const clientId = process.env.REACT_APP_COGNITO_CLIENT_ID;
-    const logoutUri = process.env.REACT_APP_LOGOUT_URI;
-    const cognitoDomain = process.env.REACT_APP_COGNITO_DOMAIN;
-    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+    // Use a timeout to ensure the navigation is completed before logging out
+    setTimeout(() => {
+      // Remove the user from local session
+      auth.removeUser();
+
+      // Then redirect to Cognito’s logout endpoint
+      const clientId = process.env.REACT_APP_COGNITO_CLIENT_ID;
+      const logoutUri = process.env.REACT_APP_LOGOUT_URI;
+      const cognitoDomain = process.env.REACT_APP_COGNITO_DOMAIN;
+      window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+    }, 100);
   };
 
   const userGroups = auth.user?.profile?.['cognito:groups'] || [];
