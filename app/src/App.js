@@ -7,6 +7,7 @@ import NavBar from './components/NavBar';
 import './App.css';
 import Menu from './components/Menu';
 import PartyManager from './components/PartyManager';
+import StatsComponent from './components/Stats';
 
 // Define the Home component
 const Home = () => (
@@ -38,6 +39,7 @@ const AppContent = () => {
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<Menu isAuthenticated={auth.isAuthenticated} />} />
             <Route path="/management" element={<ProtectedRoute component={PartyManager} />} />
+            <Route path="/stats" element={<ProtectedRoute component={StatsComponent} />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </div>

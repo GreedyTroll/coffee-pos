@@ -30,6 +30,7 @@ const Navbar = () => {
           {auth.isAuthenticated ? (
             <>
               <li className="navItem"><Link to="/management" className="navButton">Management</Link></li>
+              <li className="navItem"><Link to="/stats" className="navButton">Stats</Link></li>
               <li className="navItem"><a onClick={handleLogout} className="navButton" >Logout</a></li>
             </>
           ) : (
