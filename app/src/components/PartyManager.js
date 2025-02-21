@@ -3,42 +3,43 @@ import React, { useState, useEffect } from 'react';
 import './PartyManager.css';
 import './Route.css';
 import Order from './Order';
-import OrderTickets from './OrderTickets'; // Import OrderTickets
+import OrderTickets from './OrderTickets';
+import Seats from './Seats'; // Import Seats component
 import {
-  Paper,
-  TextField,
-  IconButton // Import IconButton
+  IconButton
 } from '@mui/material';
 import { red } from '@mui/material/colors';
-import AddIcon from '@mui/icons-material/Add'; // Import AddIcon
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Import ShoppingCartIcon
-import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'; // Import DirectionsRunIcon
-import DoneIcon from '@mui/icons-material/Done'; // Import DoneIcon
-import GroupAddIcon from '@mui/icons-material/GroupAdd'; // Import GroupAddIcon
-import CloseIcon from '@mui/icons-material/Close'; // Import CloseIcon
+import AddIcon from '@mui/icons-material/Add';
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import DoneIcon from '@mui/icons-material/Done';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import CloseIcon from '@mui/icons-material/Close';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const PartyManager = () => {
   const [parties, setParties] = useState([]);
-  const [seats, setSeats] = useState([]);
-  const [editingParty, setEditingParty] = useState(null);
-  const [editingPartySeats, setEditingPartySeats] = useState([]);
-  const [newParty, setNewParty] = useState({ partysize: '', notes: '' });
+  const [selectedParty, setSelectedParty] = useState(null);
+  const [newParty, setNewParty] = useState({ notes: '' });
   const [deactivatePartyId, setDeactivatePartyId] = useState(null);
+  const [deactivatedPartyId, setDeactivatedPartyId] = useState(null); // for seat deactivation
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [partyOrders, setPartyOrders] = useState([]);
   const [orderSent, setOrderSent] = useState(false);
   const [orderTicketsUpdated, setOrderTicketsUpdated] = useState(false);
-
+  const [newPartyId, setNewPartyId] = useState(null);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [editMode, setEditMode] = useState("cancel");
+  
   const axios = useAxios();
 
+  // fetch data
   useEffect(() => {
     fetchParties();
-    fetchSeats();
     fetchPartyOrders();
   }, []);
 
+  // order sent
   useEffect(() => {
     if (orderSent) {
       fetchPartyOrders();
@@ -56,22 +57,9 @@ const PartyManager = () => {
     }
   };
 
-  const fetchSeats = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/seats`);
-      const updatedSeats = response.data.map(seat => ({
-        ...seat,
-        status: seat.partyid ? 'occupied' : 'vacant'
-      }));
-      setSeats(updatedSeats);
-    } catch (error) {
-      console.error('Error fetching seats', error);
-    }
-  };
-
   const fetchPartyOrders = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/orders?fulfilled=all`); // TODO, only fetch dine-in orders
+      const response = await axios.get(`${apiUrl}/orders?fulfilled=all`);
       const orders = response.data.reduce((acc, order) => {
         if (!acc[order.partyid]) {
           acc[order.partyid] = [];
@@ -79,151 +67,58 @@ const PartyManager = () => {
         acc[order.partyid].push(...order.items);
         return acc;
       }, {});
-      setPartyOrders(orders);
     } catch (error) {
       console.error('Error fetching party orders', error);
     }
   };
 
-  const handleSeatClick = (seatId) => {
-    const seatIndex = seats.findIndex(seat => seat.seatid === seatId);
-    if (seatIndex !== -1) {
-      const updatedSeats = [...seats];
-      const seat = updatedSeats[seatIndex];
-
-      if (editingParty) {
-        // In edit mode
-        if (seat.partyid === editingParty.partyid) {
-          // Deselect seat only if more than one seat is assigned
-          if (editingPartySeats.length > 1) {
-            seat.partyid = null;
-            setEditingPartySeats(editingPartySeats.filter(id => id !== seatId));
-            setEditingParty({ ...editingParty, partysize: editingPartySeats.length - 1 }); // Update party size
-          }
-        } else if (!seat.partyid) {
-          // Assign seat to the editing party
-          seat.partyid = editingParty.partyid;
-          setEditingPartySeats([...editingPartySeats, seatId]);
-          setEditingParty({ ...editingParty, partysize: editingPartySeats.length + 1 }); // Update party size
-        } else {
-          // Switch to edit mode for the party occupying the seat
-          handleSaveParty(false); // Save current party before switching, but do not reset editingParty
-          const party = parties.find(p => p.partyid === seat.partyid);
-          if (party) {
-            handleEditParty(party);
-          }
-        }
-      } else {
-        // Not in edit mode
-        if (!seat.partyid) {
-          seat.partyid = 'selected';
-          setSelectedSeats([...selectedSeats, seatId]);
-          setNewParty({ ...newParty, partysize: selectedSeats.length + 1 }); // Update party size
-        } else if (seat.partyid === 'selected') {
-          seat.partyid = null;
-          setSelectedSeats(selectedSeats.filter(id => id !== seatId));
-          setNewParty({ ...newParty, partysize: selectedSeats.length - 1 }); // Update party size
-        } else {
-          // Enter edit mode for the party occupying the seat
-          if (selectedSeats.length === 0) { // Prevent entering edit mode if selectedSeats is not empty
-            const party = parties.find(p => p.partyid === seat.partyid);
-            if (party) {
-              handleEditParty(party);
-            }
-          }
-        }
-      }
-
-      setSeats(updatedSeats);
-    }
+  const handleSeatClick = (seatIds, partyId) => {
+    setSelectedParty(parties.find(party => party.partyid === partyId));
+    setDeactivatePartyId(null);
+    setSelectedSeats(seatIds);
   };
 
   const handleEditParty = (party) => {
-    setEditingParty(party);
+    setSelectedParty(party);
     setDeactivatePartyId(null);
-
-    // Set the initial seats for the editing party
-    const initialSeats = seats.filter(seat => seat.partyid === party.partyid).map(seat => seat.seatid);
-    setEditingPartySeats(initialSeats);
   };
 
-  const getSeatStatus = (seat) => {
-    if (!seat.partyid) {
-      return 'vacant';
-    } else if (seat.partyid === 'selected') {
-      return 'selected';
-    } else if (seat.partyid === editingParty?.partyid) {
-      return 'selected';
-    } else if (partyOrders[seat.partyid]?.every(order => order.Delivered)) {
-      return 'delivered';
-    } else {
-      return 'occupied';
-    }
-  };
-
-  const handleSaveParty = (resetEditingParty = true) => {
-    if (!editingParty) return;
-
-    // Update party info
-    axios.put(`${apiUrl}/parties/${editingParty.partyid}`, editingParty)
+  const handleSaveParty = () => {
+    if (!selectedParty) return;
+    
+    axios.put(`${apiUrl}/parties/${selectedParty.partyid}`, selectedParty)
       .catch(error => console.error('Error updating party info', error));
 
-    // Assign seats to the party
-    axios.post(`${apiUrl}/parties/assignSeats/${editingParty.partyid}`, { seat_ids: editingPartySeats })
+    axios.post(`${apiUrl}/parties/assignSeats/${selectedParty.partyid}`, { seat_ids: selectedSeats })
       .catch(error => console.error('Error assigning seats to party', error));
 
-    // Update local state
-    setParties(prevParties => prevParties.map(p => p.partyid === editingParty.partyid ? editingParty : p));
-    setSeats(prevSeats => prevSeats.map(seat => {
-      if (editingPartySeats.includes(seat.seatid)) {
-        return { ...seat, partyid: editingParty.partyid };
-      } else if (seat.partyid === editingParty.partyid) {
-        return { ...seat, partyid: null };
-      }
-      return seat;
-    }));
-
-    if (resetEditingParty) {
-      setEditingParty(null);
-    }
+    setParties(prevParties => prevParties.map(p => p.partyid === selectedParty.partyid ? selectedParty : p));
+    // setNewPartyId(selectedParty.partyid);
+    setSelectedParty(null);
+    setSelectedSeats([]);
+    setEditMode("save");
   };
 
-  const handleDeactivateParty = (partyId) => {
-    axios.delete(`${apiUrl}/parties/${partyId}`)
-      .catch(error => console.error('Error deactivating party', error));
-
-    // Update local state instead of fetching again
-    setParties(prevParties => prevParties.filter(p => p.partyid !== partyId));
-    setSeats(prevSeats => prevSeats.map(seat => seat.partyid === partyId ? { ...seat, partyid: null } : seat));
-    setPartyOrders(prevOrders => {
-      const updatedOrders = { ...prevOrders };
-      delete updatedOrders[partyId];
-      return updatedOrders;
-    });
-    setOrderTicketsUpdated(!orderTicketsUpdated)
-
-    setEditingParty(null);
-  };
+  const handleCancelEdit = () => {
+    setSelectedParty(null);
+    setSelectedSeats([]);
+    setEditMode("cancel");
+  }
 
   const handleCreatePartyWithSelectedSeats = async () => {
     try {
+      // create new party
       const newPartyResponse = await axios.post(`${apiUrl}/parties/add`, newParty);
       const newPartyId = newPartyResponse.data.party_id;
 
-      axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats })
-        .catch(error => console.error('Error assigning seats to new party', error));
-
-      // Update local state instead of fetching again
-      const newPartyData = { partyid: newPartyId, partysize: selectedSeats.length, notes: newParty.notes };
+      const newPartyData = { partyid: newPartyId, notes: newParty.notes };
       setParties(prevParties => [...prevParties, newPartyData]);
-      setSeats(prevSeats => prevSeats.map(seat => selectedSeats.includes(seat.seatid) ? { ...seat, partyid: newPartyId } : seat));
 
-      setNewParty({ partysize: '', notes: '' });
-      setSelectedSeats([]);
-
-      // Automatically enter edit mode for the new party
-      setEditingParty(newPartyData);
-      setEditingPartySeats(selectedSeats);
+      // Assign seats to the newly created party
+      await axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats });
+      setNewParty({ notes: '' });
+      setSelectedParty(newPartyData);
+      setNewPartyId(newPartyId);
     } catch (error) {
       console.error('Error creating party with selected seats', error);
     }
@@ -233,137 +128,82 @@ const PartyManager = () => {
     setDeactivatePartyId(partyId);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (deactivatePartyId && !event.target.closest('.deactivate-confirm')) {
-        setDeactivatePartyId(null);
-      }
-    };
+  const handleDeactivateParty = (partyId) => {
+    axios.delete(`${apiUrl}/parties/${partyId}`)
+      .catch(error => console.error('Error deactivating party', error));
 
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [deactivatePartyId]);
-
-  const floors = [...new Set(seats.map(seat => seat.floor))].sort(); // Get unique floor numbers
-
-  const renderSeats = (floor) => {
-    const rows = 10;
-    const cols = 5;
-    const grid = Array.from({ length: rows }, () => Array(cols).fill(null));
-
-    seats.filter(seat => seat.floor === floor).forEach(seat => {
-      if (seat.posx < rows && seat.posy < cols) {
-        grid[seat.posx][seat.posy] = seat;
-      } else {
-        console.warn(`Seat position out of bounds: seatid=${seat.seatid}, posx=${seat.posx}, posy=${seat.posy}`);
-      }
-    });
-
-    return (
-      <div className="floor-container" key={floor}>
-        {grid.map((row, rowIndex) => (
-          <div className="seat-row" key={rowIndex}>
-            {row.map((seat, colIndex) => (
-              <div
-                key={colIndex}
-                className={`seat ${seat ? getSeatStatus(seat) : ''}`}
-                onClick={() => seat && handleSeatClick(seat.seatid)}
-              >
-                {seat && (
-                  <Paper className="seat-paper" elevation={3} style={{color: 'white'}}>
-                    {`${seat.seatid}`}
-                  </Paper>
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [selectedPartyId, setSelectedPartyId] = useState(null);
-
-  const togglePopup = (partyId = null) => {
-    setSelectedPartyId(partyId);
-    setIsPopupVisible(!isPopupVisible);
+    setParties(prevParties => prevParties.filter(p => p.partyid !== partyId));
+    setOrderTicketsUpdated(!orderTicketsUpdated);
+    setDeactivatedPartyId(deactivatePartyId);
+    setSelectedSeats([]);
+    setSelectedParty(null);
+    setDeactivatePartyId(null);
   };
 
   const handleOrderSent = () => {
-    setIsPopupVisible(false);
     setOrderSent(true);
-    setOrderTicketsUpdated(!orderTicketsUpdated); // Trigger re-render of OrderTickets
+    setOrderTicketsUpdated(!orderTicketsUpdated);
+    togglePopup();
   };
 
   const handleOrderTicketClick = (partyId) => {
-    if (selectedSeats.length === 0) { // Prevent entering edit mode if selectedSeats is not empty
-      const party = parties.find(p => p.partyid === partyId);
-      if (party) {
-        handleEditParty(party);
-      }
+    const party = parties.find(p => p.partyid === partyId);
+    if (party) {
+      handleEditParty(party);
     }
+  };
+
+  const togglePopup = () => {
+    setIsPopupVisible(!isPopupVisible);
   };
 
   return (
     <div>
       <div className="party-manager-container">
-        <div className="party-detail">
-          {editingParty && (
-            <div>
-              <div>Party Size: {editingPartySeats.length}</div> {/* Display the number of selected seats */}
-              <TextField
-                className="notes-field" // Add this line
-                label="Notes"
-                value={editingParty.notes}
-                onChange={(e) => setEditingParty({ ...editingParty, notes: e.target.value })}
-              />
-              <h3>Orders</h3>
-              {partyOrders[editingParty.partyid] && partyOrders[editingParty.partyid].length > 0 ? (
-                <ul>
-                  {partyOrders[editingParty.partyid].map(order => (
-                    <li key={`${order.OrderItemID}-${order.ProductID}`}>{order.ProductName} - {order.Quantity}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No orders found</p>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="seating-container">
-          {floors.map(floor => renderSeats(floor))}
-        </div>
+        <Seats 
+          onSeatClick={handleSeatClick} 
+          newPartyId={newPartyId}
+          controlMode={editMode}
+          deactivatePartyId={deactivatedPartyId}
+        />
         <div className="actions">
-          <IconButton onClick={() => togglePopup()} aria-label="Take-out Order">
+          <IconButton onClick={() => togglePopup()} aria-label="Order">
             <AddIcon sx={{ fontSize: 80 }} />
           </IconButton>
-          {selectedSeats.length > 0 && !editingParty && (
+          {selectedSeats.length > 0 && !selectedParty && (
             <div className="create-party-container">
               <IconButton onClick={handleCreatePartyWithSelectedSeats} aria-label="Create Party">
                 <GroupAddIcon sx={{ fontSize: 80 }} />
               </IconButton>
             </div>
           )}
-          {editingParty && (
+          {selectedParty && (
             <div className="party-actions">
-              <IconButton onClick={() => togglePopup(editingParty.partyid)} aria-label="Order">
-                <ShoppingCartIcon sx={{ fontSize: 80 }} />
-              </IconButton>
-              {deactivatePartyId === editingParty.partyid ? (
-                <IconButton className="deactivate-confirm" onClick={() => handleDeactivateParty(editingParty.partyid)} aria-label="Confirm Deactivate">
-                  <DirectionsRunIcon sx={{ fontSize: 80, color: red[500] }} />
-                </IconButton>
+              {editMode === "edit" ? (
+                <div>
+                  <IconButton onClick={handleCancelEdit} aria-label="CancelEdit">
+                    <EditNoteIcon sx={{ fontSize: 80, color: red[500] }} />
+                  </IconButton>
+                  <IconButton onClick={handleSaveParty} aria-label="Save">
+                    <DoneIcon sx={{ fontSize: 80 }} />
+                  </IconButton>
+                </div>
               ) : (
-                <IconButton onClick={() => handleConfirmDeactivate(editingParty.partyid)} aria-label="Deactivate">
-                  <DirectionsRunIcon sx={{ fontSize: 80 }} />
-                </IconButton>
+                <div>
+                  <IconButton onClick={() => setEditMode("edit")} aria-label="Edit">
+                    <EditNoteIcon sx={{ fontSize: 80 }} />
+                  </IconButton>
+                  {deactivatePartyId === selectedParty.partyid ? (
+                    <IconButton className="deactivate-confirm" onClick={() => handleDeactivateParty(selectedParty.partyid)} aria-label="Confirm Deactivate">
+                      <DirectionsRunIcon sx={{ fontSize: 80, color: red[500] }} />
+                    </IconButton>
+                  ) : (
+                    <IconButton onClick={() => handleConfirmDeactivate(selectedParty.partyid)} aria-label="Deactivate">
+                      <DirectionsRunIcon sx={{ fontSize: 80 }} />
+                    </IconButton>
+                  )}
+                </div>
               )}
-              <IconButton onClick={handleSaveParty} aria-label="Save">
-                <DoneIcon sx={{ fontSize: 80 }} />
-              </IconButton>
             </div>
           )}
         </div>
@@ -375,12 +215,12 @@ const PartyManager = () => {
                   <CloseIcon />
                 </IconButton>
               </div>
-              <Order partyId={selectedPartyId} onOrderSent={handleOrderSent} />
+              <Order partyId={selectedParty ? selectedParty.partyid : null} onOrderSent={handleOrderSent} />
             </div>
           </div>
         )}
       </div>
-      <OrderTickets key={orderTicketsUpdated} onOrderTicketClick={handleOrderTicketClick} /> {/* Pass handler to OrderTickets */}
+      <OrderTickets key={orderTicketsUpdated} onOrderTicketClick={handleOrderTicketClick} />
     </div>
   );
 };
