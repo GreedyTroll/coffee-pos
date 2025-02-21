@@ -85,6 +85,22 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
         else return;
     }, [controlMode]);
 
+    // deselect all seats when clicking outside the seating area
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!editMode && !event.target.closest('[aria-label]') && !event.target.closest('.seat-paper')) {
+                setSelectedSeats([]);
+                onSeatClick([], null);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [editMode]); // Add editMode as a dependency
+
     const handleSeatClick = (seat) => {
         let partyId = seat.partyid;
         // cannot click on other party's seats in edit mode
