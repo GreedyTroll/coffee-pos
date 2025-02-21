@@ -39,7 +39,7 @@ def addSeat():
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.error('{e}')
+        logger.error(f'{e}')
         return {'Error': f'{e}'}, 500
     
     return {'success': True, 'seat_id': new_seat.seatid}, 200
@@ -59,7 +59,7 @@ def deleteSeat(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.error('{e}')
+        logger.error(f'{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
