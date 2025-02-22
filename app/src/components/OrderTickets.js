@@ -56,20 +56,14 @@ const OrderTickets = ({ onOrderTicketClick, partyUpdate }) => {
                 if(updatedItem.PreparedQuantity === updatedItem.Quantity)
                     updatedItem.PreparedQuantity = 0; // Reset PreparedQuantity to zero
                 else 
-                    updatedItem.PreparedQuantity = Math.min(updatedItem.PreparedQuantity + 1, updatedItem.Quantity);
+                    updatedItem.PreparedQuantity =  updatedItem.Quantity;
                 updatedOrders[orderIndex].items[itemIndex] = updatedItem;
 
                 setOrders(updatedOrders);
-                if (updatedItem.PreparedQuantity === updatedItem.Quantity) {
-                    axios.put(`${apiUrl}/orders/delivered/${orderItemId}`).then(() => {
-                    }).catch(error => {
-                        console.error('Error updating item preparation status:', error);
-                    });
-                } else if (updatedItem.PreparedQuantity === 0) {
-                    axios.put(`${apiUrl}/orders/delivered/${orderItemId}`).catch(error => {
-                        console.error('Error resetting item preparation status:', error);
-                    });
-                }
+                axios.put(`${apiUrl}/orders/delivered/${orderItemId}`).then(() => {
+                }).catch(error => {
+                    console.error('Error updating item preparation status:', error);
+                });
             }
         }
     };
