@@ -1,16 +1,23 @@
-.order-component {
+.order-container {
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  height: 90%; /* Ensure the container takes up full height */
 }
 
 .order-wrapper {
   display: flex;
   width: 100%;
+  height: 80%
 }
 
+/**
+Order summary
+*/
 .order-summary {
-  width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure total-price is at the bottom */
+  width: 200px;
   padding: 10px;
   border-right: 1px solid #ccc;
 }
@@ -24,77 +31,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px; /* Add margin to improve spacing between rows */
+  margin: 5px 0px; /* Add margin to improve spacing between rows */
 }
 
 .order-summary .item-name {
+  width: 60%;
   flex-grow: 1;
 }
 
 .order-summary .item-quantity {
-  margin: 0 10px; /* Add margin to separate quantity from buttons */
+  margin: 0 5px; /* Add margin to separate quantity from buttons */
 }
 
 .order-summary .item-controls {
   display: flex;
-  gap: 5px; /* Add space between buttons */
-}
-
-.order-content {
-  width: 80%;
-  padding-left: 20px;
-}
-
-.tabs {
-  display: flex;
-  flex-wrap: wrap; /* Allow tabs to wrap into multiple rows */
-  margin-bottom: 20px;
-}
-
-.tab {
-  padding: 10px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  margin: 5px; /* Add margin to separate tabs */
-  user-select: none; /* Disable text selection */
-}
-
-.tab.active {
-  background-color: #007bff;
-  border: 1px solid #ccc;
-  color: white;
-  margin: 5px;
-}
-
-.items {
-  flex-grow: 1; /* Allow items to take up available space */
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.item {
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin: 5px;
-  cursor: pointer;
-  user-select: none; /* Disable text selection */
-}
-
-.order-actions {
-  display: flex;
-  justify-content: center; /* Align items to the right */
-  cursor: pointer;
-  margin-top: 30px;
-}
-
-.send-button {
-  padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  height: 8vh;
+  gap: 2px; /* Add space between buttons */
 }
 
 .trash-icon {
@@ -118,12 +69,7 @@
 }
 
 .payment-method {
-  margin-bottom: 20px;
-}
-
-.payment-method label {
-  margin-right: 10px;
-  font-weight: bold;
+  margin: 10px;
 }
 
 .payment-method select {
@@ -141,14 +87,91 @@
 }
 
 .order-type {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
 }
 
 .order-type label {
-  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  height: 40px;
   font-weight: bold;
 }
 
 .order-type input[type="radio"] {
-  margin-right: 5px;
+  margin: 5px;
+}
+
+.total-price {
+  margin-top: auto; /* Push total-price to the bottom */
+  font-weight: bold;
+}
+
+/**
+Order contents
+*/
+.order-content {
+  width: 70vw;
+  padding: 0 10px;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; /* Prevent categories from wrapping to new rows */
+}
+
+.category {
+  width: 200px; /* Each category occupies around 20% of the width */
+  margin: 3px;
+  flex-direction: column;
+}
+
+.category-title {
+  height: 50px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center; /* Center align vertically */
+  justify-content: center; /* Center align horizontally */
+}
+
+.items {
+  overflow-y: auto; /* Enable vertical scrolling for items */
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.item {
+  width: 100px;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin: 2px;
+  cursor: pointer;
+  user-select: none; /* Disable text selection */
+  align-items: center; /* Center align vertically */
+  justify-content: center; /* Center align horizontally */
+}
+
+/**
+Order actions
+*/
+.order-actions {
+  display: flex;
+  justify-content: center; /* Align items to the right */
+  cursor: pointer;
+  margin-top: auto; /* Push order-actions to the bottom */
+  padding-bottom: 10px;
+}
+
+.send-button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: larger;
+  width: 100%;
+  height: 8vh;
 }

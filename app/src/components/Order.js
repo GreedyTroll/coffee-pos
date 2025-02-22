@@ -8,7 +8,6 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const OrderComponent = ({ partyId, onOrderSent }) => {
   const [menu, setMenu] = useState([]);
   const [order, setOrder] = useState([]);
-  const [activeTab, setActiveTab] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [orderType, setOrderType] = useState(partyId ? 'Dine-in' : 'Take-out'); // Set default orderType
@@ -19,7 +18,6 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     axios.get(`${apiUrl}/menu`)
       .then(response => {
         setMenu(response.data);
-        setActiveTab(response.data[0]?.categoryid);
       })
       .catch(error => console.error('Error fetching menu:', error));
 
@@ -87,12 +85,11 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const categories = [...new Set(menu.map(item => item.categoryid))];
 
   return (
-    <div className="order-component">
+    <div className="order-container">
       <div className="order-wrapper">
         <div className="order-summary">
           <h3>Order Summary</h3>
           <div className="payment-method">
-            <label htmlFor="payment-method">Payment Method </label>
             <select
               id="payment-method"
               value={selectedPaymentMethod}
@@ -141,24 +138,20 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
           </div>
         </div>
         <div className="order-content">
-          <div className="tabs">
-            {categories.map(categoryId => (
-              <button
-                key={categoryId}
-                className={`tab ${activeTab === categoryId ? 'active' : ''}`}
-                onClick={() => setActiveTab(categoryId)}
-              >
+          {categories.map(categoryId => (
+            <div key={categoryId} className="category">
+              <div className="category-title">
                 {menu.find(item => item.categoryid === categoryId)?.categoryname}
-              </button>
-            ))}
-          </div>
-          <div className="items">
-            {menu.filter(item => item.categoryid === activeTab && item.productid).map(item => (
-              <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
-                {item.productname}  ${Math.round(item.price)}
               </div>
-            ))}
-          </div>
+              <div className="items">
+                {menu.filter(item => item.categoryid === categoryId && item.productid).map(item => (
+                  <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
+                    {item.productname}  ${Math.round(item.price)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       <div className="order-actions">
