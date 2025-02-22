@@ -5,11 +5,12 @@ import { Paper } from '@mui/material';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
+const Seats = ({ onSeatClick, selectedParty, controlMode, deactivatePartyId }) => {
     const axios = useAxios();
     const [seats, setSeats] = useState([]);
     const [selectedSeats, setSelectedSeats] = useState([]);
     const [editMode, setEditMode] = useState(false);
+    const [editingPartyId, setEditingPartyId] = useState(null);
 
     // fetch seats data from the server
     useEffect(() => {
@@ -24,23 +25,29 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
         fetchSeats();
     }, []); 
 
-    // new party created
+    // invoke party selection
     useEffect(() => {
-        if (newPartyId) {
-            const updatedSeats = seats.map(seat => {
-                if (selectedSeats.includes(seat)) {
-                    return { ...seat, partyid: newPartyId };
-                }
-                return seat;
-            });
-            setSeats(updatedSeats);
-            setSelectedSeats(updatedSeats.filter(seat => seat.partyid === newPartyId)); 
+        if(selectedParty) {
+            let newSelectedSeats = seats.filter(seat => seat.partyid === selectedParty);
+            if(newSelectedSeats.length === 0) { // new partyId
+                let assignedSeats = seats.map(seat => {
+                    if(selectedSeats.includes(seat)) {
+                        return { ...seat, partyid: selectedParty };
+                    }
+                    else return seat;
+                });
+                setSeats(assignedSeats);
+                newSelectedSeats = assignedSeats.filter(seat => seat.partyid === selectedParty);
+            }
+            setSelectedSeats(newSelectedSeats);
+            onSeatClick(newSelectedSeats.map(seat => seat.seatid), selectedParty);
         }
         // deselect all seats 
         else {
             setSelectedSeats([]);
+            onSeatClick([], null);
         }
-    }, [newPartyId]);
+    }, [selectedParty]);
 
     // party deactivation
     useEffect(() => {
@@ -60,6 +67,7 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
     useEffect(() => {
         if(controlMode === "edit") {
             setEditMode(true);
+            setEditingPartyId(selectedSeats.length > 0 ? selectedSeats[0].partyid : null);
         }
         else if(controlMode === "cancel") {
             if (selectedSeats.length === 0) return;
@@ -68,7 +76,7 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
         }
         else if(editMode && controlMode === "save") {
             if(selectedSeats.length === 0) return;
-            const partyId = selectedSeats[0].partyid;
+            const partyId = editingPartyId;
             const updatedSeats = seats.map(seat => {
                 if(seat.partyid === partyId && !selectedSeats.find(selectedSeat => selectedSeat.seatid === seat.seatid)) {
                     return { ...seat, partyid: null };
@@ -80,7 +88,8 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
             });
             setSeats(updatedSeats);
             setSelectedSeats([]);
-            setEditMode(false); 
+            setEditMode(false);
+            setEditingPartyId(null); 
         }
         else return;
     }, [controlMode]);
@@ -88,9 +97,13 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
     // deselect all seats when clicking outside the seating area
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (!editMode && !event.target.closest('[aria-label]') && !event.target.closest('.seat-paper')) {
-                setSelectedSeats([]);
-                onSeatClick([], null);
+            if (!editMode && 
+                !event.target.closest('[aria-label]') &&
+                !event.target.closest('.seat-paper') && 
+                !event.target.closest('.order-component') && 
+                !event.target.closest('.order-tickets-wrapper')) {
+                    setSelectedSeats([]);
+                    onSeatClick([], null);
             }
         };
 
@@ -112,11 +125,10 @@ const Seats = ({ onSeatClick, newPartyId, controlMode, deactivatePartyId }) => {
         if(!editMode && selectedSeats.length > 0 && selectedSeats[0].partyid) {
             prevSelectedSeats = [];
         }
-        // set partyId to previously selected party if in edit mode
-        if(editMode && selectedSeats.length > 0) {
-            partyId = selectedSeats[0].partyid;
+        // set partyId to the editing party if in edit mode
+        if(editMode) {
+            partyId = editingPartyId;
         }
-
         let newSelectedSeats;
         if((editMode && partyId) || !partyId) { // normally select/deselect seat
             if (selectedSeats.includes(seat)) { // deselect seat

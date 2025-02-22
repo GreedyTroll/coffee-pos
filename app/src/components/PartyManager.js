@@ -15,6 +15,7 @@ import DoneIcon from '@mui/icons-material/Done';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -27,9 +28,9 @@ const PartyManager = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [orderSent, setOrderSent] = useState(false);
   const [orderTicketsUpdated, setOrderTicketsUpdated] = useState(false);
-  const [newPartyId, setNewPartyId] = useState(null);
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [isOrderMenuVisible, setIsOrderMenuVisible] = useState(false);
   const [editMode, setEditMode] = useState("cancel");
+  const [seatUpdate, setSeatUpdate] = useState({party: null, seats: []});
   
   const axios = useAxios();
 
@@ -93,7 +94,7 @@ const PartyManager = () => {
       .catch(error => console.error('Error assigning seats to party', error));
 
     setParties(prevParties => prevParties.map(p => p.partyid === selectedParty.partyid ? selectedParty : p));
-    // setNewPartyId(selectedParty.partyid);
+    setSeatUpdate({party: selectedParty.partyid, seats: selectedSeats});
     setSelectedParty(null);
     setSelectedSeats([]);
     setEditMode("save");
@@ -103,6 +104,10 @@ const PartyManager = () => {
     setSelectedParty(null);
     setSelectedSeats([]);
     setEditMode("cancel");
+  }
+
+  const handleSetEdit = () => {
+    setEditMode("edit");
   }
 
   const handleCreatePartyWithSelectedSeats = async () => {
@@ -118,7 +123,6 @@ const PartyManager = () => {
       await axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats });
       setNewParty({ notes: '' });
       setSelectedParty(newPartyData);
-      setNewPartyId(newPartyId);
     } catch (error) {
       console.error('Error creating party with selected seats', error);
     }
@@ -140,10 +144,14 @@ const PartyManager = () => {
     setDeactivatePartyId(null);
   };
 
+  const handleShowOrders = () => {
+    
+  };
+
   const handleOrderSent = () => {
     setOrderSent(true);
     setOrderTicketsUpdated(!orderTicketsUpdated);
-    togglePopup();
+    toggleOrderMenu();
   };
 
   const handleOrderTicketClick = (partyId) => {
@@ -153,29 +161,34 @@ const PartyManager = () => {
     }
   };
 
-  const togglePopup = () => {
-    setIsPopupVisible(!isPopupVisible);
+  const toggleOrderMenu = () => {
+    setIsOrderMenuVisible(!isOrderMenuVisible);
   };
 
   return (
     <div>
       <div className="party-manager-container">
+        <div className="order-tickets">
+          <OrderTickets
+            key={orderTicketsUpdated} 
+            onOrderTicketClick={handleOrderTicketClick} 
+            partyUpdate={seatUpdate}
+          />
+        </div>
         <Seats 
           onSeatClick={handleSeatClick} 
-          newPartyId={newPartyId}
+          selectedParty={selectedParty ? selectedParty.partyid : null}
           controlMode={editMode}
           deactivatePartyId={deactivatedPartyId}
         />
         <div className="actions">
-          <IconButton onClick={() => togglePopup()} aria-label="Order">
+          <IconButton onClick={() => toggleOrderMenu()} aria-label="Order">
             <AddIcon sx={{ fontSize: 80 }} />
           </IconButton>
           {selectedSeats.length > 0 && !selectedParty && (
-            <div className="create-party-container">
-              <IconButton onClick={handleCreatePartyWithSelectedSeats} aria-label="Create Party">
-                <GroupAddIcon sx={{ fontSize: 80 }} />
-              </IconButton>
-            </div>
+            <IconButton onClick={handleCreatePartyWithSelectedSeats} aria-label="Create Party">
+              <GroupAddIcon sx={{ fontSize: 80 }} />
+            </IconButton>
           )}
           {selectedParty && (
             <div className="party-actions">
@@ -190,9 +203,14 @@ const PartyManager = () => {
                 </div>
               ) : (
                 <div>
-                  <IconButton onClick={() => setEditMode("edit")} aria-label="Edit">
+                  <IconButton onClick={handleShowOrders} aria-label='Show Orders'>
+                    <ReceiptIcon sx={{ fontSize: 80 }} />
+                  </IconButton>
+                  <div> {/* add div so that the event listener can correctly target the button */}
+                  <IconButton onClick={handleSetEdit} aria-label="Edit">
                     <EditNoteIcon sx={{ fontSize: 80 }} />
                   </IconButton>
+                  </div>
                   {deactivatePartyId === selectedParty.partyid ? (
                     <IconButton className="deactivate-confirm" onClick={() => handleDeactivateParty(selectedParty.partyid)} aria-label="Confirm Deactivate">
                       <DirectionsRunIcon sx={{ fontSize: 80, color: red[500] }} />
@@ -207,11 +225,11 @@ const PartyManager = () => {
             </div>
           )}
         </div>
-        {isPopupVisible && (
+        {isOrderMenuVisible && (
           <div className="popup-container">
             <div className="popup-content">
               <div className="popup-actions">
-                <IconButton onClick={togglePopup} aria-label="Close">
+                <IconButton onClick={toggleOrderMenu} aria-label="Close">
                   <CloseIcon />
                 </IconButton>
               </div>
@@ -220,7 +238,6 @@ const PartyManager = () => {
           </div>
         )}
       </div>
-      <OrderTickets key={orderTicketsUpdated} onOrderTicketClick={handleOrderTicketClick} />
     </div>
   );
 };

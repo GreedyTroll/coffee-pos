@@ -37,26 +37,25 @@
 }
 
 .actions {
-  position: relative; /* Change to relative to position below the seating container */
-  margin-right: 20px;
-  padding: 10px;
-  z-index: 1000; /* Ensure it appears above other elements */
   display: flex; /* Use flexbox for layout */
+  /*margin-right: 10px;*/
   flex-direction: column; /* Change to column to stack elements vertically */
-  align-items: flex-start; /* Align items to the start */
-  height: 80vh; /* Match the height of the seating-container */
-  width: 10%;
+  align-items: center; /* Align items to the center */
+  height: 85vh; /* Match the height of the seating-container */
+  width: 10vw;
 }
 
 .party-actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Align to the right */
+  align-items: center; /* Align to the center */
   margin-top: auto; /* Move to the bottom of the actions component */
+  width: 10%; /* Set width to 10% */
 }
 
-.create-party-container {
+.order-tickets {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Align to the right */
+  align-items: center;
+  width: 20vw;
 }
