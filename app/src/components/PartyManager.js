@@ -94,9 +94,13 @@ const PartyManager = () => {
       .catch(error => console.error('Error assigning seats to party', error));
 
     setParties(prevParties => prevParties.map(p => p.partyid === selectedParty.partyid ? selectedParty : p));
-    setSeatUpdate({party: selectedParty.partyid, seats: selectedSeats});
+    setSeatUpdate({party: selectedParty.partyid, seats: selectedSeats}); // update OrderTickets
+    
+    // release selected party
     setSelectedParty(null);
     setSelectedSeats([]);
+
+    // trigger seat assignment update
     setEditMode("save");
   };
 
@@ -206,7 +210,7 @@ const PartyManager = () => {
                   <IconButton onClick={handleShowOrders} aria-label='Show Orders'>
                     <ReceiptIcon sx={{ fontSize: 80 }} />
                   </IconButton>
-                  <div> {/* add div so that the event listener can correctly target the button */}
+                  <div> {/* add div so that the click event listener can correctly target the button */}
                   <IconButton onClick={handleSetEdit} aria-label="Edit">
                     <EditNoteIcon sx={{ fontSize: 80 }} />
                   </IconButton>
