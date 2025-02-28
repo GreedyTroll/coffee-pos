@@ -32,9 +32,7 @@ def addParty():
         return {"message": 'no data received'}, 400
     
     try:
-        new_party = Party(
-            notes=data['notes']
-        )
+        new_party = Party()
     
         db.session.add(new_party)
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
@@ -66,9 +64,7 @@ def updateParty(id):
     try:
         if 'partysize' in data:
             party.partysize = data['partysize']
-        if 'notes' in data:
-            party.notes = data['notes']
-        
+
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()

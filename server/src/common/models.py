@@ -1,6 +1,7 @@
 from enum import Enum
 from sqlalchemy.sql import func
 from app import db
+from sqlalchemy import PrimaryKeyConstraint
 
 def model_to_dict(model):
     result = {}
@@ -14,7 +15,6 @@ def model_to_dict(model):
 class Party(db.Model):
     __tablename__ = 'parties'
     partyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    notes = db.Column(db.Text)
     createdat = db.Column(db.DateTime, default=func.now())
     leftat = db.Column(db.DateTime, nullable=True)
     seats = db.relationship('Seat', backref='party')  # Add relationship to Seat
@@ -51,21 +51,38 @@ class Item(db.Model):
     description = db.Column(db.Text)
     price = db.Column(db.Numeric(10, 2))
     categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
-    isdeleted = db.Column(db.Boolean, default=False)
+    ishidden = db.Column(db.Boolean, default=False)
     createdat = db.Column(db.DateTime, default=func.now())
-    
-class Discount(db.Model):
-    __tablename__ = 'discounts'
-    discountid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    discountname = db.Column(db.String(20), nullable=False)
-    amount = db.Column(db.Numeric(10, 2))
 
-class DiscountCombination(db.Model):
-    __tablename__ = 'discountcombinations'
-    combinationid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    discountid = db.Column(db.Integer, db.ForeignKey('discounts.discountid'))
-    categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
-    quantity = db.Column(db.Integer)
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    tagid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tagname = db.Column(db.String(20), nullable=False)
+    tagcolor = db.Column(db.String(20), default="#000000", nullable=False)
+
+class ItemTag(db.Model):
+    __tablename__ = 'itemtags'
+    itemid = db.Column(db.Integer, db.ForeignKey('items.productid'))
+    tagid = db.Column(db.Integer, db.ForeignKey('tags.tagid'))
+    __table_args__ = (
+        PrimaryKeyConstraint('itemid', 'tagid'),
+    )
+
+class Addon(db.Model):
+    __tablename__ = 'addons'
+    addonid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    addonname = db.Column(db.String(100))
+    price = db.Column(db.Numeric(10, 2))
+    category = db.Column(db.String(20))
+    createdat = db.Column(db.DateTime, default=func.now())
+
+class AvailableAddon(db.Model):
+    __tablename__ = 'availableaddons'
+    itemid = db.Column(db.Integer, db.ForeignKey('items.productid'))
+    addonid = db.Column(db.Integer, db.ForeignKey('addons.addonid'))
+    __table_args__ = (
+        PrimaryKeyConstraint('itemid', 'addonid'),
+    )
 
 class PaymentMethod(db.Model):
     __tablename__ = 'paymentmethods'
@@ -81,13 +98,17 @@ class Order(db.Model):
     paymentmethod = db.Column(db.String(20), db.ForeignKey('paymentmethods.methodname'))
     paidtime = db.Column(db.DateTime)
     ordertype = db.Column(db.String(20))
+    notes = db.Column(db.Text)
 
 class OrderItem(db.Model):
     __tablename__ = 'orderitems'
     orderitemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     orderid = db.Column(db.Integer, db.ForeignKey('orders.orderid'))
     productid = db.Column(db.Integer, db.ForeignKey('items.productid'))
+    productname = db.Column(db.String(100))
+    addons = db.Column(db.JSON)
     quantity = db.Column(db.Integer)
+    unitprice = db.Column(db.Numeric(10, 2))
     delivered = db.Column(db.Boolean, default=False)
 
 class OrderDetail(db.Model):

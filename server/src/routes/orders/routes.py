@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party, Seat  # Import Seat model
+from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party, Seat, Addon  # Import Seat model
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone, timedelta
 import logging
@@ -84,23 +84,39 @@ def newOrder():
             partyid= data['party_id'] if data.get('party_id') else None,
             paymentmethod=data['payment_method'],
             paidtime=datetime.now(tz=timezone(timedelta(hours=8))) if data.get('paid') else None,
-            ordertype=data['order_type']
+            ordertype=data['order_type'],
+            notes=data['notes'] if data.get('notes') else None
         )
         db.session.add(new_order)
 
         total = 0
         for item in data['items']:
             product = Item.query.get(item['product_id'])
-            if not product:
+            if not product: # make sure product in request exist
                 return {"message": f"Product with id {item['product_id']} not found"}, 400
+
+            addon_total = 0
+            addons = []
+            if item.get('addons'): # make sure addons in request exist
+                for addon_id in item['addons']:
+                    addon = Addon.query.get(addon_id)
+                    if addon:
+                        addons.append({'name': addon.addonname, 'price': addon.price})
+                        addon_total += addon.price
+                    else:
+                        return {"message": f"Addon with id {addon_id} not found"}, 400
 
             order_item = OrderItem(
                 orderid = new_order.orderid,
                 productid=item['product_id'],
-                quantity=item['quantity']
+                quantity=item['quantity'],
+                productname=product.productname,
+                # addons = item['addons'] if item.get('addons') else None,
+                addons = addons, 
+                unitprice=int(product.price) + addon_total
             )
             db.session.add(order_item)
-            total += int(item['quantity']) * int(product.price)
+            total += int(item['quantity']) * int(order_item.unitprice)
         
         new_order.totalamount = total
         
