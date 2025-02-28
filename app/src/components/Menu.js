@@ -1,6 +1,7 @@
 import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
 import MenuSection from './MenuSection';
+import TagAddonPopup from './TagAddonPopup';
 import './Route.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -12,24 +13,24 @@ const Menu = ({ isAuthenticated }) => {
     const [newProducts, setNewProducts] = useState({});
     const [deletedItems, setDeletedItems] = useState([]);
     const [addedItems, setAddedItems] = useState([]);
+    const [newTags, setNewTags] = useState({});
+    const [newAddons, setNewAddons] = useState({});
+    const [popupItem, setPopupItem] = useState(null);
 
     const axios = useAxios();
 
     const processMenuData = (data) => {
-        return data.reduce((acc, item) => {
-            const categoryIndex = acc.findIndex(cat => cat.categoryid === item.categoryid);
-            if (categoryIndex !== -1) {
-                if (item.productid) {
-                    acc[categoryIndex].products.push(item);
-                }
-            } else {
-                acc.push({
-                    ...item,
-                    products: item.productid ? [item] : []
-                });
-            }
-            return acc;
-        }, []);
+        return data.map(category => {
+            const products = category.items.map(item => ({
+                ...item,
+                tags: item.tags || [],
+                addons: item.addons || []
+            }));
+            return {
+                ...category,
+                products
+            };
+        });
     };
 
     useEffect(() => {
@@ -86,11 +87,26 @@ const Menu = ({ isAuthenticated }) => {
         setNewProducts(prev => ({ ...prev, [categoryid]: { product_name: '', description: '', price: '', menu_order: '' } }));
     };
 
+    const handleTagChange = (itemid, e) => {
+        const { name, value } = e.target;
+        setNewTags(prev => ({
+            ...prev,
+            [itemid]: { ...prev[itemid], [name]: value }
+        }));
+    };
+
+    const handleAddonChange = (itemid, e) => {
+        const { name, value } = e.target;
+        setNewAddons(prev => ({
+            ...prev,
+            [itemid]: { ...prev[itemid], [name]: value }
+        }));
+    };
+
     const deleteItem = (item) => {
-        console.log(`item to delete ${JSON.stringify(item)}`)
         setDeletedItems(prev => [...prev, item]);
     
-        if (item.categoryid) {
+        if (item.productid) {
             // It's a product deletion
             setMenu(prev => prev.map(category => {
                 if (category.categoryid === item.categoryid) {
@@ -111,9 +127,6 @@ const Menu = ({ isAuthenticated }) => {
         deletedItems.forEach(item => {
             const endpoint = item.category_name ? 'category' : 'item';
             axios.delete(`${apiUrl}/menu/${endpoint}/${item.productid}`)
-            .then(response => {
-                console.log('Item deleted:', response.data);
-            })
             .catch(error => {
                 console.error('Error deleting item:', error);
             });
@@ -121,17 +134,34 @@ const Menu = ({ isAuthenticated }) => {
 
         addedItems.forEach(item => {
             axios.post(`${apiUrl}/menu/addItem`, item)
-            .then(response => {
-                console.log('Item added:', response.data);
-            })
             .catch(error => {
                 console.error('Error adding item:', error);
+            });
+        });
+
+        // Update tags
+        Object.keys(newTags).forEach(itemid => {
+            const tag_ids = newTags[itemid].tags.map(tag => tag.tagid);
+            axios.post(`${apiUrl}/menu/linkTag`, { item_id: itemid, tag_ids })
+            .catch(error => {
+                console.error('Error updating tags:', error);
+            });
+        });
+
+        // Update addons
+        Object.keys(newAddons).forEach(itemid => {
+            const addon_ids = newAddons[itemid].addons.map(addon => addon.addonid);
+            axios.post(`${apiUrl}/menu/linkAddon`, { item_id: itemid, addon_ids })
+            .catch(error => {
+                console.error('Error updating addons:', error);
             });
         });
 
         setIsEditMode(false);
         setDeletedItems([]);
         setAddedItems([]);
+        setNewTags({});
+        setNewAddons({});
     };
 
     const cancelChanges = () => {
@@ -146,6 +176,14 @@ const Menu = ({ isAuthenticated }) => {
         setIsEditMode(false);
         setDeletedItems([]);
         setAddedItems([]);
+    };
+
+    const openPopup = (item) => {
+        setPopupItem(item);
+    };
+
+    const closePopup = () => {
+        setPopupItem(null);
     };
 
     const categories = menu.filter(item => item.categoryname);
@@ -176,6 +214,11 @@ const Menu = ({ isAuthenticated }) => {
                         addProduct={addProduct}
                         deleteItem={deleteItem}
                         newProducts={newProducts} // Pass down the newProducts state
+                        handleTagChange={handleTagChange}
+                        newTags={newTags}
+                        handleAddonChange={handleAddonChange}
+                        newAddons={newAddons}
+                        openPopup={openPopup}
                     />
                 )
             ))}
@@ -207,6 +250,14 @@ const Menu = ({ isAuthenticated }) => {
                         <button onClick={addCategory}>Add Category</button>
                     </div>
                 </div>
+            )}
+            {popupItem && (
+                <TagAddonPopup
+                    item={popupItem}
+                    closePopup={closePopup}
+                    handleTagChange={handleTagChange}
+                    handleAddonChange={handleAddonChange}
+                />
             )}
         </div>
     );

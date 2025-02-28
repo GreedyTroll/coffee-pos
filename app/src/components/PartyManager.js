@@ -22,7 +22,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const PartyManager = () => {
   const [parties, setParties] = useState([]);
   const [selectedParty, setSelectedParty] = useState(null);
-  const [newParty, setNewParty] = useState({ notes: '' });
+  const [newParty, setNewParty] = useState({});
   const [deactivatePartyId, setDeactivatePartyId] = useState(null);
   const [deactivatedPartyId, setDeactivatedPartyId] = useState(null); // for seat deactivation
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -120,12 +120,12 @@ const PartyManager = () => {
       const newPartyResponse = await axios.post(`${apiUrl}/parties/add`, newParty);
       const newPartyId = newPartyResponse.data.party_id;
 
-      const newPartyData = { partyid: newPartyId, notes: newParty.notes };
+      const newPartyData = { partyid: newPartyId };
       setParties(prevParties => [...prevParties, newPartyData]);
 
       // Assign seats to the newly created party
       await axios.post(`${apiUrl}/parties/assignSeats/${newPartyId}`, { seat_ids: selectedSeats });
-      setNewParty({ notes: '' });
+      setNewParty({});
       setSelectedParty(newPartyData);
     } catch (error) {
       console.error('Error creating party with selected seats', error);

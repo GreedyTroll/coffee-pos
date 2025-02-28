@@ -14,10 +14,24 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
 
   const axios = useAxios();
 
+  const processMenuData = (data) => {
+    return data.map(category => {
+        const products = category.items.map(item => ({
+            ...item,
+            tags: item.tags || [],
+            addons: item.addons || []
+        }));
+        return {
+            ...category,
+            products
+        };
+    });
+  };
+
   useEffect(() => {
     axios.get(`${apiUrl}/menu`)
       .then(response => {
-        setMenu(response.data);
+        setMenu(processMenuData(response.data));
       })
       .catch(error => console.error('Error fetching menu:', error));
 
@@ -77,12 +91,13 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
 
   const calculateTotalPrice = () => {
     return order.reduce((total, item) => {
-      const menuItem = menu.find(menuItem => menuItem.productid === item.product_id);
+      const category = menu.find(category => category.products.some(product => product.productid === item.product_id));
+      const menuItem = category ? category.products.find(product => product.productid === item.product_id) : null;
       return total + (menuItem ? menuItem.price * item.quantity : 0);
     }, 0);
   };
 
-  const categories = [...new Set(menu.map(item => item.categoryid))];
+  const categories = menu.map(category => category.categoryid);
 
   return (
     <div className="order-container">
@@ -141,10 +156,10 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
           {categories.map(categoryId => (
             <div key={categoryId} className="category">
               <div className="category-title">
-                {menu.find(item => item.categoryid === categoryId)?.categoryname}
+                {menu.find(category => category.categoryid === categoryId)?.categoryname}
               </div>
               <div className="items">
-                {menu.filter(item => item.categoryid === categoryId && item.productid).map(item => (
+                {menu.find(category => category.categoryid === categoryId)?.products.map(item => (
                   <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
                     {item.productname}  ${Math.round(item.price)}
                   </div>

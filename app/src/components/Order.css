@@ -25,6 +25,7 @@ Order summary
 .order-summary ul {
   list-style-type: none;
   padding: 0;
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .order-summary li {
