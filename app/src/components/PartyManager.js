@@ -1,7 +1,6 @@
 import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
 import './PartyManager.css';
-import './Route.css';
 import Order from './Order';
 import OrderTickets from './OrderTickets';
 import Seats from './Seats'; // Import Seats component

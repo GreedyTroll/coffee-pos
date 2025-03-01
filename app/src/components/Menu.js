@@ -2,7 +2,7 @@ import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
 import MenuSection from './MenuSection';
 import TagAddonPopup from './TagAddonPopup';
-import './Route.css';
+import './Menu.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
