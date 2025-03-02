@@ -200,6 +200,37 @@ def addCategory():
         return {'categoryid': category.categoryid, 'success': True}, 200
     return {'success': True}, 200
 
+@menu_bp.route('/category/<int:id>', methods=['PUT'])
+@token_required
+def updateCategory(id):
+    if not id:
+        return {'error': 'no id provided'}, 400
+    
+    category = Category.query.get(id)
+    if not category:
+        return {'error': "category id not found"}, 400
+    try:
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+        
+        # Check if data is received
+        if data is None:
+            return {"message": 'no data received'}, 400
+        
+        category.menuorder = data.get('menu_order', category.menuorder)
+        category.categoryname = data.get('category_name', category.categoryname)
+        category.description = data.get('description', category.description)
+        
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f'{e}')
+        return {'Error': f'{e}'}, 500
+        
+    return  {'category': category.categoryid, 'success': True}, 200
+
 @menu_bp.route('/category/<int:id>', methods=['DELETE'])
 @token_required
 def deleteCategory(id):
@@ -209,11 +240,6 @@ def deleteCategory(id):
     category = Category.query.get(id)
     if not category:
         return {'error': "item id not found"}, 400
-    
-    # Check if the category still has items
-    items_in_category = Item.query.filter_by(categoryid=id).all()
-    if items_in_category:
-        return {'error': 'category still has items'}, 400
     
     try:
         db.session.delete(category)
