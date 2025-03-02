@@ -8,11 +8,6 @@ const apiUrl = process.env.REACT_APP_API_URL;
 
 const Menu = ({ isAuthenticated }) => {
     const [menu, setMenu] = useState([]);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [newCategory, setNewCategory] = useState({ category_name: '', description: '', menu_order: 0 });
-    const [newProducts, setNewProducts] = useState({});
-    const [deletedItems, setDeletedItems] = useState([]);
-    const [addedItems, setAddedItems] = useState([]);
     const [newTags, setNewTags] = useState({});
     const [newAddons, setNewAddons] = useState({});
     const [popupItem, setPopupItem] = useState(null);
@@ -44,49 +39,6 @@ const Menu = ({ isAuthenticated }) => {
         });
     }, []);
 
-    const toggleEditMode = () => {
-        setIsEditMode(!isEditMode);
-    };
-
-    const handleCategoryChange = (e) => {
-        const { name, value } = e.target;
-        setNewCategory(prev => ({ ...prev, [name]: value }));
-    };
-
-    const addCategory = () => {
-        axios.post(`${apiUrl}/menu/addCategory`, newCategory)
-        .then(response => {
-            setMenu(prev => [...prev, { ...response.data, products: [] }]);
-            setNewCategory({ category_name: '', description: '', menu_order: 0 });
-        })
-        .catch(error => {
-            console.error('Error adding category:', error);
-        });
-    };
-
-    const handleProductChange = (categoryid, e) => {
-        const { name, value } = e.target;
-        setNewProducts(prev => ({
-            ...prev,
-            [categoryid]: { ...prev[categoryid], [name]: value }
-        }));
-    };
-
-    const addProduct = (categoryid) => {
-        const newProduct = newProducts[categoryid];
-        setMenu(prev => {
-            const newMenu = [...prev];
-            const categoryIndex = newMenu.findIndex(cat => cat.categoryid === categoryid);
-            if (!newMenu[categoryIndex].products) {
-                newMenu[categoryIndex].products = [];
-            }
-            newMenu[categoryIndex].products = [...newMenu[categoryIndex].products, { ...newProduct, temporaryId: Date.now() }];
-            return newMenu;
-        });
-        setAddedItems(prev => [...prev, { ...newProduct, categoryid }]);
-        setNewProducts(prev => ({ ...prev, [categoryid]: { product_name: '', description: '', price: '', menu_order: '' } }));
-    };
-
     const handleTagChange = (itemid, e) => {
         const { name, value } = e.target;
         setNewTags(prev => ({
@@ -103,42 +55,30 @@ const Menu = ({ isAuthenticated }) => {
         }));
     };
 
-    const deleteItem = (item) => {
-        setDeletedItems(prev => [...prev, item]);
-    
-        if (item.productid) {
-            // It's a product deletion
-            setMenu(prev => prev.map(category => {
-                if (category.categoryid === item.categoryid) {
-                    return {
-                        ...category,
-                        products: category.products.filter(product => product.productid !== item.productid)
-                    };
-                }
-                return category;
-            }));
-        } else {
-            // It's a category deletion
-            setMenu(prev => prev.filter(category => category.categoryid !== item.categoryid));
+    const updateCategory = (category, categoryId) => {
+        // if category is null, delete the category
+        if (!category) {
+            axios.delete(`${apiUrl}/menu/category/${categoryId}`)
+            .then(() => {
+                setMenu(prev => prev.filter(c => c.categoryid !== categoryId));
+            })
+            .catch(error => {
+                console.error('Error deleting category:', error);
+            });
+            return;
         }
-    };    
+        // update existing category
+        const existingCategoryIndex = menu.findIndex(cat => cat.categoryid === categoryId);
+        if (existingCategoryIndex !== -1) {
+            const updatedMenu = [...menu];
+            updatedMenu[existingCategoryIndex] = { ...category, categoryid: categoryId };
+            setMenu(updatedMenu);
+        } else { // add new category
+            setMenu(prev => [...prev, { ...category, categoryid: categoryId, products: [] }]);
+        }
+    };
 
     const saveChanges = () => {
-        deletedItems.forEach(item => {
-            const endpoint = item.category_name ? 'category' : 'item';
-            axios.delete(`${apiUrl}/menu/${endpoint}/${item.productid}`)
-            .catch(error => {
-                console.error('Error deleting item:', error);
-            });
-        });
-
-        addedItems.forEach(item => {
-            axios.post(`${apiUrl}/menu/addItem`, item)
-            .catch(error => {
-                console.error('Error adding item:', error);
-            });
-        });
-
         // Update tags
         Object.keys(newTags).forEach(itemid => {
             const tag_ids = newTags[itemid].tags.map(tag => tag.tagid);
@@ -156,26 +96,6 @@ const Menu = ({ isAuthenticated }) => {
                 console.error('Error updating addons:', error);
             });
         });
-
-        setIsEditMode(false);
-        setDeletedItems([]);
-        setAddedItems([]);
-        setNewTags({});
-        setNewAddons({});
-    };
-
-    const cancelChanges = () => {
-        axios.get(`${apiUrl}/menu`)
-        .then(response => {
-            const menuData = processMenuData(response.data);
-            setMenu(menuData);
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-        });
-        setIsEditMode(false);
-        setDeletedItems([]);
-        setAddedItems([]);
     };
 
     const openPopup = (item) => {
@@ -186,71 +106,27 @@ const Menu = ({ isAuthenticated }) => {
         setPopupItem(null);
     };
 
-    const categories = menu.filter(item => item.categoryname);
-
     return (
         <div>
             <div className="route-title-container">
                 <h1>Menu</h1>
             </div>
-            <div className="center-button">
-                {isEditMode ? (
-                    <>
-                        <button onClick={saveChanges}>Save</button>
-                        <button onClick={cancelChanges}>Cancel</button>
-                    </>
-                ) : (
-                    isAuthenticated && <button onClick={toggleEditMode}>Edit Mode</button>
-                )}
-            </div>
-            {categories.map((category, index) => (
-                (isEditMode || (category.products && category.products.length > 0)) && (
-                    <MenuSection
-                        key={index}
-                        category={category}
-                        products={category.products}
-                        isEditMode={isEditMode}
-                        handleProductChange={handleProductChange}
-                        addProduct={addProduct}
-                        deleteItem={deleteItem}
-                        newProducts={newProducts} // Pass down the newProducts state
-                        handleTagChange={handleTagChange}
-                        newTags={newTags}
-                        handleAddonChange={handleAddonChange}
-                        newAddons={newAddons}
-                        openPopup={openPopup}
-                    />
-                )
+
+            {menu.map((category, index) => (            
+                <MenuSection
+                    key={index}
+                    category={category}
+                    openPopup={openPopup}
+                    isAuthenticated={isAuthenticated}
+                    updateCategory={updateCategory}
+                />
             ))}
-            {isEditMode && (
-                <div className="new-category">
-                    <h2>Add New Category</h2>
-                    <div className="new-category-inputs">
-                        <input
-                            type="text"
-                            name="category_name"
-                            placeholder="Category Name"
-                            value={newCategory.category_name}
-                            onChange={handleCategoryChange}
-                        />
-                        <input
-                            type="text"
-                            name="description"
-                            placeholder="Description"
-                            value={newCategory.description}
-                            onChange={handleCategoryChange}
-                        />
-                        <input
-                            type="number"
-                            name="menu_order"
-                            placeholder="Menu Order"
-                            value={newCategory.menu_order}
-                            onChange={handleCategoryChange}
-                        />
-                        <button onClick={addCategory}>Add Category</button>
-                    </div>
-                </div>
-            )}
+            <MenuSection
+                category={{ categoryid: -1, categoryname: '', description: '', menuorder: 0, products: [] }}
+                openPopup={openPopup}
+                isAuthenticated={isAuthenticated}
+                updateCategory={updateCategory}
+            />
             {popupItem && (
                 <TagAddonPopup
                     item={popupItem}
