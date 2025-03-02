@@ -60,6 +60,11 @@ const TagAddonPopup = ({ item, closePopup, handleTagChange, handleAddonChange })
         closePopup();
     };
 
+    const formatPrice = (price) => {
+        if (Math.round(price) === 0) return '';
+        return price > 0 ? `+${Math.round(price)}` : `${Math.round(price)}`;
+    };
+
     return (
         <div className="popup">
             <div className="popup-inner">
@@ -93,7 +98,8 @@ const TagAddonPopup = ({ item, closePopup, handleTagChange, handleAddonChange })
                             <h4>Linked Addons</h4>
                             {linkedAddons.map(addon => (
                                 <div key={addon.addonid} onClick={() => handleAddonClick(addon, true)}>
-                                    {addon.addonname}
+                                    <span>{addon.addonname}</span>
+                                    <span>{formatPrice(addon.price)}</span>
                                 </div>
                             ))}
                         </div>
@@ -101,7 +107,8 @@ const TagAddonPopup = ({ item, closePopup, handleTagChange, handleAddonChange })
                             <h4>Unlinked Addons</h4>
                             {unlinkedAddons.map(addon => (
                                 <div key={addon.addonid} onClick={() => handleAddonClick(addon, false)}>
-                                    {addon.addonname}
+                                    <span>{addon.addonname}</span>
+                                    <span>{formatPrice(addon.price)}</span>
                                 </div>
                             ))}
                         </div>

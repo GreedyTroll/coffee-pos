@@ -60,7 +60,7 @@
     padding: 0 0;
 }
 
-.linked-tags div, .unlinked-tags div, .linked-addons div, .unlinked-addons div {
+.linked-tags div, .unlinked-tags div {
     padding: 5px;
     margin: 5px 0;
     background: #f0f0f0;
@@ -68,6 +68,20 @@
     border-radius: 5px;
 }
 
-.linked-tags div:hover, .unlinked-tags div:hover, .linked-addons div:hover, .unlinked-addons div:hover {
+.linked-tags div:hover, .unlinked-tags div:hover {
+    background: #e0e0e0;
+}
+
+.linked-addons div, .unlinked-addons div {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    margin: 5px 0;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.linked-addons div:hover, .unlinked-addons div:hover {
     background: #e0e0e0;
 }
