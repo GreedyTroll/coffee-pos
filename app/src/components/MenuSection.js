@@ -64,7 +64,14 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
     };
 
     const addItem = (item) => {
-        axios.post(`${apiUrl}/menu/addItem`, item)
+        const newItem = {
+            product_name: item.productname,
+            description: item.description,
+            price: item.price,
+            menu_order: item.menuorder,
+            categoryid: item.categoryid
+        };
+        axios.post(`${apiUrl}/menu/addItem`, newItem)
         .catch(error => {
             console.error('Error adding item:', error);
         });
@@ -79,7 +86,9 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
     };
 
     const addProduct = () => {
-        const updatedProducts = [...localCategory.products, newProduct];
+        const new_product = {...newProduct, categoryid: localCategory.categoryid};
+        setAddedItems([...addedItems, new_product]);
+        const updatedProducts = [...localCategory.products, new_product];
         const updatedCategory = { ...localCategory, products: updatedProducts };
         setLocalCategory(updatedCategory);
         setNewProduct({ productname: '', description: '', price: 0, menuorder: 100 });
@@ -121,7 +130,14 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
 
         // update items
         updatedItems.forEach(item => {
-            axios.put(`${apiUrl}/menu/item/${item.productid}`, item)
+            const updatedItem = {
+                product_name: item.productname,
+                description: item.description,
+                price: item.price,
+                menu_order: item.menuorder,
+                categoryid: item.category
+            };
+            axios.put(`${apiUrl}/menu/item/${item.productid}`, updatedItem)
             .catch(error => {
                 console.error('Error updating item:', error);
             });
@@ -143,6 +159,9 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
 
     const cancelChanges = () => {
         setIsEditMode(false);
+        setAddedItems([]);
+        setDeletedItems([]);
+        setUpdatedItems([]);
         setLocalCategory(category);
     };
 
