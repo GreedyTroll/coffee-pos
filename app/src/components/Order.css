@@ -17,7 +17,7 @@ Order summary
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* Ensure total-price is at the bottom */
-  width: 200px;
+  width: 300px; /* increased from 200px */
   padding: 10px;
   border-right: 1px solid #ccc;
 }
@@ -33,11 +33,12 @@ Order summary
   justify-content: space-between;
   align-items: center;
   margin: 5px 0px; /* Add margin to improve spacing between rows */
+  gap: 5px; /* Provide some spacing between elements */
 }
 
 .order-summary .item-name {
   width: 60%;
-  flex-grow: 1;
+  flex-grow: 1; /* Let the item name take remaining space */
 }
 
 .order-summary .item-quantity {
@@ -53,6 +54,7 @@ Order summary
   cursor: pointer;
   color: red;
   align-self: center; /* Align the trash icon vertically with the buttons */
+  font-size: 1.5em; /* make the trash icon larger */
 }
 
 .quantity-button {
@@ -113,7 +115,7 @@ Order summary
 Order contents
 */
 .order-content {
-  width: 70vw;
+  width: 60vw; /* decreased from 70vw */
   padding: 0 10px;
   overflow-x: auto; /* Enable horizontal scrolling */
   display: flex;

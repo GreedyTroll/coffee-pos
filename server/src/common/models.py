@@ -104,7 +104,6 @@ class OrderItem(db.Model):
     __tablename__ = 'orderitems'
     orderitemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     orderid = db.Column(db.Integer, db.ForeignKey('orders.orderid'))
-    productid = db.Column(db.Integer, db.ForeignKey('items.productid'))
     productname = db.Column(db.String(100))
     addons = db.Column(db.JSON)
     quantity = db.Column(db.Integer)

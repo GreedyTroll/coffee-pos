@@ -43,7 +43,7 @@ CREATE TABLE Items (
     CategoryID INT,
     IsHidden Boolean DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE CASCADE
 );
 
 CREATE TABLE Tags (
@@ -101,14 +101,12 @@ CREATE TABLE Orders (
 CREATE TABLE OrderItems (
     OrderItemID SERIAL PRIMARY KEY,
     OrderID INT,
-    ProductID INT,
     ProductName VARCHAR(100),
     AddOns JSONB,
     Quantity INT,
     UnitPrice DECIMAL(10, 2),
     Delivered Boolean DEFAULT FALSE,
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
-    FOREIGN KEY (ProductID) REFERENCES Items(ProductID) ON DELETE SET NULL
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
 );
 
 -- OrderDetail view
@@ -125,8 +123,7 @@ SELECT
     JSON_AGG(
         JSON_BUILD_OBJECT(
             'OrderItemID', oi.OrderItemID,
-            'ProductID', oi.ProductID,
-            'ProductName', i.ProductName,
+            'ProductName', oi.ProductName,
             'AddOns', oi.AddOns,
             'UnitPrice', oi.UnitPrice,
             'Quantity', oi.Quantity,
@@ -138,7 +135,5 @@ FROM
     Orders o
 JOIN 
     OrderItems oi ON o.OrderID = oi.OrderID
-JOIN 
-    Items i ON oi.ProductID = i.ProductID
 GROUP BY 
     o.OrderID;
