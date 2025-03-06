@@ -59,7 +59,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const handleSendOrder = () => {
     onOrderSent(); // Trigger onOrderSent immediately
     axios.post(`${apiUrl}/orders/new`, {
-      party_id: partyId,
+      party_id: (orderType === 'Take-out') ? null : partyId,
       payment_method: selectedPaymentMethod,
       order_type: orderType,
       items: order
