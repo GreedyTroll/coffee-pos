@@ -83,7 +83,7 @@ def addItem():
             productname=data.get('product_name', 'Unknown Product'),
             menuorder=data.get('menu_order', 0),
             description=data.get('description', ''),
-            price=int(data.get('price', 0)),
+            price=float(data.get('price', 0)),
             categoryid=category.categoryid
         )
     
@@ -119,7 +119,7 @@ def updateItem(id):
         item.productname = data.get('product_name', item.productname)
         item.menuorder = data.get('menu_order', item.menuorder)
         item.description = data.get('description', item.description)
-        item.price = int(data.get('price', item.price))
+        item.price = float(data.get('price', item.price))
         item.categoryid = data.get('categoryid', item.categoryid)
         
         db.session.commit()
@@ -299,7 +299,6 @@ def linkTag():
     
     try:
         tag_ids = data.get('tag_ids', [])
-        print(tag_ids)
         if 'category_id' in data:
             items = Item.query.filter_by(categoryid=data['category_id']).all()
             for item in items:
@@ -375,7 +374,7 @@ def addAddon():
     try:
         addon = Addon(
             addonname=data['addon_name'],
-            price=data['price']
+            price=float(data['price'])
         )
         db.session.add(addon)
         db.session.commit()
