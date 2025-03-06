@@ -45,13 +45,13 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     setOrder((prevOrder) => {
       const existingItemIndex = prevOrder.findIndex((o) =>
         o.product_id === product.productid &&
-        JSON.stringify(o.selectedAddons.map(a => a.addonid).sort()) ===
+        JSON.stringify(o.addons.map(a => a.addonid).sort()) ===
         JSON.stringify(selectedAddons.map(a => a.addonid).sort())
       );
       if (existingItemIndex !== -1) {
         const updatedOrder = [...prevOrder];
         updatedOrder[existingItemIndex].quantity += 1;
-        updatedOrder[existingItemIndex].selectedAddons = selectedAddons;
+        updatedOrder[existingItemIndex].addons = selectedAddons;
         return updatedOrder;
       } else {
         return [
@@ -60,7 +60,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
             product_id: product.productid,
             product_name: product.productname,
             quantity: 1,
-            selectedAddons
+            addons: selectedAddons
           }
         ];
       }
@@ -68,12 +68,17 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   };
 
   const handleSendOrder = () => {
-    onOrderSent(); // Trigger onOrderSent immediately
+    // only send addon ids to the server
+    const orderWithAddonIds = order.map(item => ({
+      ...item,
+      addons: item.addons.map(addon => addon.addonid),
+    }));
+    onOrderSent();
     axios.post(`${apiUrl}/orders/new`, {
       party_id: (orderType === 'Take-out') ? null : partyId,
       payment_method: selectedPaymentMethod,
       order_type: orderType,
-      items: order
+      items: orderWithAddonIds
     })
     .catch(error => console.error('Error sending order:', error));
   };
@@ -109,7 +114,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         ? category.items.find(product => product.productid === item.product_id)
         : null;
       const basePrice = menuItem ? menuItem.price * item.quantity : 0;
-      const addonsPrice = item.selectedAddons?.reduce(
+      const addonsPrice = item.addons?.reduce(
         (sum, addon) => sum + parseFloat(addon.price || 0),
         0
       ) || 0;
@@ -172,8 +177,8 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
                   </div>
                   <span className="item-name">
                     {item.product_name}
-                    {item.selectedAddons?.length > 0 && (
-                      ` (${item.selectedAddons.map(a => a.addonname).join(', ')})`
+                    {item.addons?.length > 0 && (
+                      ` (${item.addons.map(a => a.addonname).join(', ')})`
                     )}
                   </span>
                   <span className="item-quantity">{item.quantity}</span>
