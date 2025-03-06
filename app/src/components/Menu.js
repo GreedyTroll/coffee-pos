@@ -1,31 +1,25 @@
 import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
 import MenuSection from './MenuSection';
-import TagAddonPopup from './TagAddonPopup';
+import TagAddonLinker from './TagAddonLinker';
+import TagAddonManager from './TagAddonManager';
 import './Menu.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Menu = ({ isAuthenticated }) => {
     const [menu, setMenu] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [addons, setAddons] = useState([]);
     const [newTags, setNewTags] = useState({});
     const [newAddons, setNewAddons] = useState({});
     const [popupItem, setPopupItem] = useState(null);
+    const [popup, setPopup] = useState(false);
 
     const axios = useAxios();
 
     const processMenuData = (data) => {
-        return data.map(category => {
-            const products = category.items.map(item => ({
-                ...item,
-                tags: item.tags || [],
-                addons: item.addons || []
-            }));
-            return {
-                ...category,
-                products
-            };
-        });
+        return data;
     };
 
     useEffect(() => {
@@ -37,21 +31,50 @@ const Menu = ({ isAuthenticated }) => {
         .catch(error => {
             console.error('Error fetching data:', error);
         });
+        // get tags
+        axios.get(`${apiUrl}/menu/tags`)
+        .then(response => {
+            setTags(response.data);
+        })
+        .catch(error => {
+            console.error('Error fetching tags:', error);
+        });
+        // get addons
+        axios.get(`${apiUrl}/menu/addons`)
+        .then(response => {
+            setAddons(response.data);
+        })
+        .catch(error => {
+            console.error('Error fetching addons:', error);
+        });
+
     }, []);
 
-    const handleTagChange = (itemid, e) => {
+    const handleTagChange = (categoryid, productid, e) => {
         const { name, value } = e.target;
         setNewTags(prev => ({
             ...prev,
-            [itemid]: { ...prev[itemid], [name]: value }
+            [categoryid]: {
+                ...(prev[categoryid] || {}),
+                [productid]: {
+                    ...((prev[categoryid] || {})[productid] || {}),
+                    [name]: value
+                }
+            }
         }));
     };
 
-    const handleAddonChange = (itemid, e) => {
+    const handleAddonChange = (categoryid, productid, e) => {
         const { name, value } = e.target;
         setNewAddons(prev => ({
             ...prev,
-            [itemid]: { ...prev[itemid], [name]: value }
+            [categoryid]: {
+                ...(prev[categoryid] || {}),
+                [productid]: {
+                    ...((prev[categoryid] || {})[productid] || {}),
+                    [name]: value
+                }
+            }
         }));
     };
 
@@ -74,7 +97,25 @@ const Menu = ({ isAuthenticated }) => {
             updatedMenu[existingCategoryIndex] = { ...category, categoryid: categoryId };
             setMenu(updatedMenu);
         } else { // add new category
-            setMenu(prev => [...prev, { ...category, categoryid: categoryId, products: [] }]);
+            setMenu(prev => [...prev, { ...category, categoryid: categoryId, items: [] }]);
+        }
+        // update the tags/addons for the category
+        console.log(category);
+        if (category && category.items) {
+            const catId = category.categoryid || categoryId;
+            category.items.forEach((item) => {
+                const productId = item.productid;
+                if (newTags[catId] && newTags[catId][productId]?.tags) {
+                    const tag_ids = newTags[catId][productId].tags.map(tag => tag.tagid);
+                    axios.post(`${apiUrl}/menu/linkTag`, { product_id: productId, tag_ids })
+                    .catch(error => console.error('Error updating tags:', error));
+                }
+                if (newAddons[catId] && newAddons[catId][productId]?.addons) {
+                    const addon_ids = newAddons[catId][productId].addons.map(addon => addon.addonid);
+                    axios.post(`${apiUrl}/menu/linkAddon`, { product_id: productId, addon_ids })
+                    .catch(error => console.error('Error updating addons:', error));
+                }
+            });
         }
     };
 
@@ -98,19 +139,41 @@ const Menu = ({ isAuthenticated }) => {
         });
     };
 
+    const cancelChanges = (categoryid) => {
+        // Clear new tags and addons
+        setNewTags(prev => {
+            delete prev[categoryid];
+            return prev;
+        });
+        setNewAddons(prev => {
+            delete prev[categoryid];
+            return prev;
+        });
+    }
+
     const openPopup = (item) => {
         setPopupItem(item);
     };
 
-    const closePopup = () => {
+    const closePopupItem = () => {
         setPopupItem(null);
     };
+
+    const closePopup = () => {
+        setPopup(false);
+    }
 
     return (
         <div>
             <div className="route-title-container">
                 <h1>Menu</h1>
             </div>
+
+            {isAuthenticated && (
+                <div className="open-popup-btn">
+                    <button onClick={() => setPopup(true)}>Edit Tags and Addons</button>
+                </div>
+            )}
 
             {menu.map((category, index) => (            
                 <MenuSection
@@ -119,20 +182,28 @@ const Menu = ({ isAuthenticated }) => {
                     openPopup={openPopup}
                     isAuthenticated={isAuthenticated}
                     updateCategory={updateCategory}
+                    cancelChanges={cancelChanges}
                 />
             ))}
             <MenuSection
-                category={{ categoryid: -1, categoryname: '', description: '', menuorder: 0, products: [] }}
+                category={{ categoryid: -1, categoryname: '', description: '', menuorder: 0, items: [] }}
                 openPopup={openPopup}
                 isAuthenticated={isAuthenticated}
                 updateCategory={updateCategory}
             />
             {popupItem && (
-                <TagAddonPopup
+                <TagAddonLinker
+                    allTags={tags}
+                    allAddons={addons}
                     item={popupItem}
-                    closePopup={closePopup}
+                    closePopup={closePopupItem}
                     handleTagChange={handleTagChange}
                     handleAddonChange={handleAddonChange}
+                />
+            )}
+            {popup && (
+                <TagAddonManager 
+                    closePopup={closePopup}
                 />
             )}
         </div>

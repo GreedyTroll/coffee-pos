@@ -1,37 +1,30 @@
 import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
-import './TagAddonPopup.css';
+import './TagAddonLinker.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const TagAddonPopup = ({ item, closePopup, handleTagChange, handleAddonChange }) => {
+const TagAddonLinker = ({ allTags, allAddons, item, closePopup, handleTagChange, handleAddonChange }) => {
     const [linkedTags, setLinkedTags] = useState(item.tags || []);
     const [unlinkedTags, setUnlinkedTags] = useState([]);
     const [linkedAddons, setLinkedAddons] = useState(item.addons || []);
     const [unlinkedAddons, setUnlinkedAddons] = useState([]);
 
-    const axios = useAxios();
+    useEffect(() => {
+        setUnlinkedAddons(allAddons.filter(a => !linkedAddons.some(la => la.addonid === a.addonid)));
+        setUnlinkedTags(allTags.filter(t => !linkedTags.some(lt => lt.tagid === t.tagid)));
+    }, [allTags, allAddons]);
 
     useEffect(() => {
-        axios.get(`${apiUrl}/menu/tags`)
-            .then(response => {
-                setUnlinkedTags(response.data.filter(tag => !linkedTags.some(t => t.tagid === tag.tagid)));
-            })
-            .catch(error => console.error('Error fetching tags:', error));
-
-        axios.get(`${apiUrl}/menu/addons`)
-            .then(response => {
-                setUnlinkedAddons(response.data.filter(addon => !linkedAddons.some(a => a.addonid === addon.addonid)));
-            })
-            .catch(error => console.error('Error fetching addons:', error));
-    }, []);
-
-    useEffect(() => {
-        handleTagChange(item.productid, { target: { name: 'tags', value: linkedTags } });
+        handleTagChange(item.categoryid, item.productid, {
+            target: { name: 'tags', value: linkedTags }
+        });
     }, [linkedTags]);
 
     useEffect(() => {
-        handleAddonChange(item.productid, { target: { name: 'addons', value: linkedAddons } });
+        handleAddonChange(item.categoryid, item.productid, {
+            target: { name: 'addons', value: linkedAddons }
+        });
     }, [linkedAddons]);
 
     const handleTagClick = (tag, isLinked) => {
@@ -119,4 +112,4 @@ const TagAddonPopup = ({ item, closePopup, handleTagChange, handleAddonChange })
     );
 };
 
-export default TagAddonPopup;
+export default TagAddonLinker;

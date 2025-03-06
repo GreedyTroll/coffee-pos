@@ -313,16 +313,16 @@ def linkTag():
                 for tag_id in tags_to_add:
                     db.session.add(ItemTag(itemid=item.productid, tagid=tag_id))
         else:
-            item_id = data['item_id']
-            existing_tags = {item_tag.tagid for item_tag in ItemTag.query.filter_by(itemid=item_id).all()}
+            product_id = data['product_id']
+            existing_tags = {item_tag.tagid for item_tag in ItemTag.query.filter_by(itemid=product_id).all()}
             new_tags = set(tag_ids)
             tags_to_remove = existing_tags - new_tags
             tags_to_add = new_tags - existing_tags
 
             for tag_id in tags_to_remove:
-                ItemTag.query.filter_by(itemid=item_id, tagid=tag_id).delete()
+                ItemTag.query.filter_by(itemid=product_id, tagid=tag_id).delete()
             for tag_id in tags_to_add:
-                db.session.add(ItemTag(itemid=item_id, tagid=tag_id))
+                db.session.add(ItemTag(itemid=product_id, tagid=tag_id))
         
         db.session.commit()
     except SQLAlchemyError as e:
@@ -332,7 +332,7 @@ def linkTag():
     
     return {'success': True}, 200
 
-@menu_bp.route('/deleteTag/<int:id>', methods=['DELETE'])
+@menu_bp.route('/tags/<int:id>', methods=['DELETE'])
 @token_required
 def deleteTag(id):
     if not id:
@@ -413,16 +413,16 @@ def linkAddon():
                 for addon_id in addons_to_add:
                     db.session.add(AvailableAddon(itemid=item.productid, addonid=addon_id))
         else:
-            item_id = data['item_id']
-            existing_addons = {available_addon.addonid for available_addon in AvailableAddon.query.filter_by(itemid=item_id).all()}
+            product_id = data['product_id']
+            existing_addons = {available_addon.addonid for available_addon in AvailableAddon.query.filter_by(itemid=product_id).all()}
             new_addons = set(addon_ids)
             addons_to_remove = existing_addons - new_addons
             addons_to_add = new_addons - existing_addons
 
             for addon_id in addons_to_remove:
-                AvailableAddon.query.filter_by(itemid=item_id, addonid=addon_id).delete()
+                AvailableAddon.query.filter_by(itemid=product_id, addonid=addon_id).delete()
             for addon_id in addons_to_add:
-                db.session.add(AvailableAddon(itemid=item_id, addonid=addon_id))
+                db.session.add(AvailableAddon(itemid=product_id, addonid=addon_id))
         
         db.session.commit()
     except SQLAlchemyError as e:
@@ -432,7 +432,7 @@ def linkAddon():
     
     return {'success': True}, 200
 
-@menu_bp.route('/deleteAddon/<int:id>', methods=['DELETE'])
+@menu_bp.route('/addons/<int:id>', methods=['DELETE'])
 @token_required
 def deleteAddon(id):
     if not id:

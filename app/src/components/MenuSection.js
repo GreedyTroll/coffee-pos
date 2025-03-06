@@ -4,7 +4,7 @@ import './MenuSection.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) => {
+const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, cancelChanges }) => {
     const [localCategory, setLocalCategory] = useState(category);
     const [newProduct, setNewProduct] = useState({ productname: '', description: '', price: 0, menuorder: 100 });
     const [updatedItems, setUpdatedItems] = useState([]);
@@ -33,12 +33,12 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
     const handleExistingProductChange = (e, index) => {
         const { name, value } = e.target;
         setLocalCategory((prev) => {
-            const updatedProducts = [...prev.products];
+            const updatedProducts = [...prev.items];
             updatedProducts[index] = { ...updatedProducts[index], [name]: value };
-            return { ...prev, products: updatedProducts };
+            return { ...prev, items: updatedProducts };
         });
         setUpdatedItems((prev) => {
-            const existing = localCategory.products[index];
+            const existing = localCategory.items[index];
             if (!existing.productid) return prev;
             const updatedItem = { ...existing, [name]: value };
             const found = prev.find((p) => p.productid === updatedItem.productid);
@@ -88,30 +88,32 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
     const addProduct = () => {
         const new_product = {...newProduct, categoryid: localCategory.categoryid};
         setAddedItems([...addedItems, new_product]);
-        const updatedProducts = [...localCategory.products, new_product];
-        const updatedCategory = { ...localCategory, products: updatedProducts };
+        const updatedProducts = [...localCategory.items, new_product];
+        const updatedCategory = { ...localCategory, items: updatedProducts };
         setLocalCategory(updatedCategory);
         setNewProduct({ productname: '', description: '', price: 0, menuorder: 100 });
     };
 
     const deleteItem = (item) => {
-        if (item.productid) { // delete product
+        if (item.productid) { // delete item
             setDeletedItems([...deletedItems, item]);
             setLocalCategory((prev) => {
-                const updatedProducts = prev.products.filter((p) => p.productid !== item.productid);
-                return { ...prev, products: updatedProducts };
+                const updatedProducts = prev.items.filter((p) => p.productid !== item.productid);
+                return { ...prev, items: updatedProducts };
             });
-        } else if (item.categoryname) { // delete category
-            updateCategory(null, item.categoryid);
-            setIsEditMode(false);
-        } else { // delete new product (without product id yet)
+        } else { // delete new item (without product id yet)
             setAddedItems(addedItems.filter(i => i !== item));
             setLocalCategory((prev) => {
-                const updatedProducts = prev.products.filter((p) => p !== item);
-                return { ...prev, products: updatedProducts };
+                const updatedProducts = prev.items.filter((p) => p !== item);
+                return { ...prev, items: updatedProducts };
             });
         }
     };
+
+    const deleteCategory = () => {
+        updateCategory(null, localCategory.categoryid);
+        setIsEditMode(false);
+    }
 
     const saveChanges = () => {
         // update category
@@ -135,7 +137,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
                 description: item.description,
                 price: item.price,
                 menu_order: item.menuorder,
-                categoryid: item.category
+                categoryid: item.categoryid
             };
             axios.put(`${apiUrl}/menu/item/${item.productid}`, updatedItem)
             .catch(error => {
@@ -151,25 +153,30 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
             });
         });
 
+        updateCategory(localCategory, localCategory.categoryid);
+
         setAddedItems([]);
         setDeletedItems([]);
         setUpdatedItems([]);
         setIsEditMode(false);
     };
 
-    const cancelChanges = () => {
+    const donotSave = () => {
         setIsEditMode(false);
         setAddedItems([]);
         setDeletedItems([]);
         setUpdatedItems([]);
         setLocalCategory(category);
+        cancelChanges(localCategory.categoryid);
     };
 
     if (localCategory.categoryid < 0) {
         return (
             <div className="menu-section">
-                <div className="new-category">
-                    <h2>Add New Category</h2>
+                <div className="category-header">
+                    <h2 className="center-text">Add New Category</h2>
+                </div>
+                <div className="menu-items">
                     <div className="new-category-inputs">
                         <input
                             type="text"
@@ -212,7 +219,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
                             onChange={handleCategoryChange}
                             className="category-order"
                         />
-                        <button className="delete-button" onClick={() => deleteItem(localCategory)}>Delete Category</button>
+                        <button className="delete-button" onClick={deleteCategory}>Delete Category</button>
                     </>
                 )}
             </div>
@@ -221,14 +228,14 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
                 {isEditMode ? (
                     <>
                         <button onClick={saveChanges}>Save</button>
-                        <button onClick={cancelChanges}>Cancel</button>
+                        <button onClick={donotSave}>Cancel</button>
                     </>
                 ) : (
                     isAuthenticated && <button onClick={toggleEditMode}>Edit</button>
                 )}
             </div>
             <div className="menu-items">
-                {localCategory.products.map((product, index) => (
+                {localCategory.items.map((product, index) => (
                     <div key={index} className="menu-row">
                         <div className="menu-item-name">{product.productname || "No Product Name"}</div>
                         <div className="menu-item-description">{product.description || ""}</div>

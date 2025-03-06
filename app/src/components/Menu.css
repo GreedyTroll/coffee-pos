@@ -9,3 +9,25 @@
 .route-title-container h1 {
   color: #341b06;
 }
+
+.open-popup-btn {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.open-popup-btn button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.open-popup-btn button:hover {
+  background-color: #0056b3;
+}

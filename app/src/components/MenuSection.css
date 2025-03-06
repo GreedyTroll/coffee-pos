@@ -17,15 +17,6 @@
     text-align: center;
 }
 
-.new-category {
-    margin-top: 40px;
-    text-align: center;
-}
-
-.new-category-inputs {
-    display: inline-block;
-}
-
 .new-category input[type="text"] {
     margin: 5px 10px 5px 0;
     text-align: center;
@@ -55,7 +46,8 @@
     gap: 10px;
 }
 
-.menu-row {
+.menu-row,
+.new-category-inputs {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -124,7 +116,9 @@
     background-color: #218838;
 }
 
-.category-header {
+.category-header,
+.new-category
+{
     display: flex;
     align-items: center;
     justify-content: space-between;
