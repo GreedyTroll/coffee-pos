@@ -101,8 +101,8 @@ def newOrder():
                 for addon_id in item['addons']:
                     addon = Addon.query.get(addon_id)
                     if addon:
-                        addons.append({'name': addon.addonname, 'price': addon.price})
-                        addon_total += addon.price
+                        addons.append({'name': addon.addonname, 'price': float(addon.price)})
+                        addon_total += float(addon.price)
                     else:
                         return {"message": f"Addon with id {addon_id} not found"}, 400
 
