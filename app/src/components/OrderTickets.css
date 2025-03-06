@@ -34,6 +34,7 @@
   justify-content: space-between; /* Align content to the sides */
   align-items: center;
   margin-bottom: 10px;
+  padding: 0 5px;
   height: 40px;
   position: relative; /* Add position relative for progress bar */
   background-color: rgba(255, 0, 0, 0.3); /* Transparent red background */
@@ -50,12 +51,14 @@
   cursor: pointer;
 }
 
-.button.prepared {
-  background-color: green;
-}
-
 .button.discard {
-  background-color: green; /* Change color to green */
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: none;
   display: block;
-  margin: 10px auto 0; /* Center horizontally */
+  margin: 10px auto 0;
+  cursor: pointer;
 }

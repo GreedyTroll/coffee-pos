@@ -96,7 +96,13 @@ const OrderTickets = ({ onOrderTicketClick, partyUpdate }) => {
                                     key={item.OrderItemID}
                                     onClick={() => handlePreparedChange(order.orderid, item.OrderItemID)}
                                 >
-                                    <span>{item.ProductName} {item.PreparedQuantity}/{item.Quantity}</span>
+                                    <span style={{ float: 'left' }}>
+                                        {item.ProductName}
+                                        {item.AddOns && item.AddOns.length > 0 && `(${item.AddOns.map(a => a.name).join(', ')})`}
+                                    </span>
+                                    <span style={{ float: 'right' }}>
+                                        {item.PreparedQuantity}/{item.Quantity}
+                                    </span>
                                     <div
                                         className="progress-bar"
                                         style={{
