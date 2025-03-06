@@ -108,10 +108,8 @@ def newOrder():
 
             order_item = OrderItem(
                 orderid = new_order.orderid,
-                productid=item['product_id'],
                 quantity=item['quantity'],
                 productname=product.productname,
-                # addons = item['addons'] if item.get('addons') else None,
                 addons = addons, 
                 unitprice=int(product.price) + addon_total
             )
