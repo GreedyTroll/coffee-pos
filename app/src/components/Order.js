@@ -8,6 +8,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 
 const OrderComponent = ({ partyId, onOrderSent }) => {
   const [menu, setMenu] = useState([]);
+  const [party, setParty] = useState(null);
   const [order, setOrder] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
@@ -34,6 +35,8 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         setSelectedPaymentMethod(response.data[0]);
       })
       .catch(error => console.error('Error fetching payment methods:', error));
+
+    setParty(partyId);
   }, []);
 
   const handleItemClick = (item) => {
@@ -75,7 +78,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     }));
     onOrderSent();
     axios.post(`${apiUrl}/orders/new`, {
-      party_id: (orderType === 'Take-out') ? null : partyId,
+      party_id: (orderType === 'Take-out') ? null : party,
       payment_method: selectedPaymentMethod,
       order_type: orderType,
       items: orderWithAddonIds
