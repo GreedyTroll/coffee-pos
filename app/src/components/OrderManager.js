@@ -7,6 +7,7 @@ const apiUrl = process.env.REACT_APP_API_URL;
 function OrderManager({ partyId, orderId }) {
   const [orders, setOrders] = useState([]);
   const [party, setParty] = useState(null);
+  const [singleOrderId, setSingleOrderId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -73,7 +74,7 @@ function OrderManager({ partyId, orderId }) {
         });
         setCheckoutMessage('Checkout successful!');
         const response = await axios.get(`${apiUrl}/orders/${orders[0].orderid}`);
-        setOrders(response.data);
+        setOrders([response.data]);
       }
       catch (error) {
         console.error('Failed to checkout order:', error);
@@ -81,7 +82,7 @@ function OrderManager({ partyId, orderId }) {
       return;
     }
     
-    try {
+    try { // checkout all remaining orders for party
       await axios.put(`${apiUrl}/orders/checkout/${party}`, {
         payment_method: paymentMethod
       });
