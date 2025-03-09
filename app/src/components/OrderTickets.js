@@ -4,7 +4,7 @@ import './OrderTickets.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const OrderTickets = ({ onOrderTicketClick, partyUpdate }) => {
+const OrderTickets = ({ onOrderTicketClick, onOrderTopicClick, partyUpdate }) => {
     const axios = useAxios();
 
     const [orders, setOrders] = useState([]);
@@ -85,7 +85,7 @@ const OrderTickets = ({ onOrderTicketClick, partyUpdate }) => {
                         className={`order-ticket ${order.ordertype === 'Take-out' ? 'take-out' : ''}`}
                         onClick={() => onOrderTicketClick(order.partyid)} // Call handler on click
                     >
-                        <h3>{new Date(order.orderdate).toLocaleTimeString()}</h3>
+                        <h3 onClick={() => onOrderTopicClick(order.orderid)}>{new Date(order.orderdate).toLocaleTimeString()}</h3>
                         <p>Total: {Number(order.totalamount).toFixed(0)}</p>
                         {order.seat_ids.length > 0 && (
                           <p>Seats: {order.seat_ids.join(', ')}</p> // Display seat IDs

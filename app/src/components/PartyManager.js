@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './PartyManager.css';
 import Order from './Order';
 import OrderTickets from './OrderTickets';
+import OrderManager from './OrderManager';
 import Seats from './Seats'; // Import Seats component
 import {
   IconButton
@@ -23,13 +24,15 @@ const PartyManager = () => {
   const [selectedParty, setSelectedParty] = useState(null);
   const [newParty, setNewParty] = useState({});
   const [deactivatePartyId, setDeactivatePartyId] = useState(null);
-  const [deactivatedPartyId, setDeactivatedPartyId] = useState(null); // for seat deactivation
+  const [deactivatedPartyId, setDeactivatedPartyId] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [orderSent, setOrderSent] = useState(false);
   const [orderTicketsUpdated, setOrderTicketsUpdated] = useState(false);
   const [isOrderMenuVisible, setIsOrderMenuVisible] = useState(false);
   const [editMode, setEditMode] = useState("cancel");
   const [seatUpdate, setSeatUpdate] = useState({party: null, seats: []});
+  const [isOrderManagerVisible, setIsOrderManagerVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   
   const axios = useAxios();
 
@@ -148,7 +151,13 @@ const PartyManager = () => {
   };
 
   const handleShowOrders = () => {
-    
+    setIsOrderManagerVisible(true);
+  };
+
+  const handleOrderTopicClick = ( orderId ) => {
+    setSelectedParty(null);
+    setSelectedOrder(orderId);
+    setIsOrderManagerVisible(true);
   };
 
   const handleOrderSent = () => {
@@ -175,6 +184,7 @@ const PartyManager = () => {
           <OrderTickets
             key={orderTicketsUpdated} 
             onOrderTicketClick={handleOrderTicketClick} 
+            onOrderTopicClick={handleOrderTopicClick}
             partyUpdate={seatUpdate}
           />
         </div>
@@ -237,6 +247,21 @@ const PartyManager = () => {
                 </IconButton>
               </div>
               <Order partyId={selectedParty ? selectedParty.partyid : null} onOrderSent={handleOrderSent} />
+            </div>
+          </div>
+        )}
+        {isOrderManagerVisible && (
+          <div className="popup-container">
+            <div className="popup-content">
+              <div className="popup-actions">
+                <IconButton onClick={() => setIsOrderManagerVisible(false)} aria-label="Close">
+                  <CloseIcon />
+                </IconButton>
+              </div>
+              <OrderManager 
+                partyId={selectedParty ? selectedParty.partyid : null} 
+                orderId={selectedOrder ? selectedOrder : null}
+              />
             </div>
           </div>
         )}
