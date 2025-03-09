@@ -10,20 +10,13 @@
   color: #341b06;
 }
 
-.center-button {
+.open-popup-btn {
   display: flex;
   justify-content: center;
-  align-items: center;
-  text-align: center;
+  margin-top: 10px;
 }
 
-.center-button {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.center-button button {
+.open-popup-btn button {
   background-color: #007bff;
   color: white;
   border: none;
@@ -35,15 +28,6 @@
   transition: background-color 0.3s;
 }
 
-.center-button button:hover {
+.open-popup-btn button:hover {
   background-color: #0056b3;
-}
-
-.center-button button:active {
-  background-color: #004494;
-}
-
-.center-button button:focus {
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }

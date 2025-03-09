@@ -1,35 +1,25 @@
 import useAxios from '../hooks/useAxiosAuth';
 import React, { useState, useEffect } from 'react';
 import MenuSection from './MenuSection';
-import './Route.css';
+import TagAddonLinker from './TagAddonLinker';
+import TagAddonManager from './TagAddonManager';
+import './Menu.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Menu = ({ isAuthenticated }) => {
     const [menu, setMenu] = useState([]);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [newCategory, setNewCategory] = useState({ category_name: '', description: '', menu_order: 0 });
-    const [newProducts, setNewProducts] = useState({});
-    const [deletedItems, setDeletedItems] = useState([]);
-    const [addedItems, setAddedItems] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [addons, setAddons] = useState([]);
+    const [newTags, setNewTags] = useState({});
+    const [newAddons, setNewAddons] = useState({});
+    const [popupItem, setPopupItem] = useState(null);
+    const [popup, setPopup] = useState(false);
 
     const axios = useAxios();
 
     const processMenuData = (data) => {
-        return data.reduce((acc, item) => {
-            const categoryIndex = acc.findIndex(cat => cat.categoryid === item.categoryid);
-            if (categoryIndex !== -1) {
-                if (item.productid) {
-                    acc[categoryIndex].products.push(item);
-                }
-            } else {
-                acc.push({
-                    ...item,
-                    products: item.productid ? [item] : []
-                });
-            }
-            return acc;
-        }, []);
+        return data;
     };
 
     useEffect(() => {
@@ -41,172 +31,180 @@ const Menu = ({ isAuthenticated }) => {
         .catch(error => {
             console.error('Error fetching data:', error);
         });
-    }, []);
-
-    const toggleEditMode = () => {
-        setIsEditMode(!isEditMode);
-    };
-
-    const handleCategoryChange = (e) => {
-        const { name, value } = e.target;
-        setNewCategory(prev => ({ ...prev, [name]: value }));
-    };
-
-    const addCategory = () => {
-        axios.post(`${apiUrl}/menu/addCategory`, newCategory)
+        // get tags
+        axios.get(`${apiUrl}/menu/tags`)
         .then(response => {
-            setMenu(prev => [...prev, { ...response.data, products: [] }]);
-            setNewCategory({ category_name: '', description: '', menu_order: 0 });
+            setTags(response.data);
         })
         .catch(error => {
-            console.error('Error adding category:', error);
+            console.error('Error fetching tags:', error);
         });
-    };
+        // get addons
+        axios.get(`${apiUrl}/menu/addons`)
+        .then(response => {
+            setAddons(response.data);
+        })
+        .catch(error => {
+            console.error('Error fetching addons:', error);
+        });
 
-    const handleProductChange = (categoryid, e) => {
+    }, []);
+
+    const handleTagChange = (categoryid, productid, e) => {
         const { name, value } = e.target;
-        setNewProducts(prev => ({
+        setNewTags(prev => ({
             ...prev,
-            [categoryid]: { ...prev[categoryid], [name]: value }
+            [categoryid]: {
+                ...(prev[categoryid] || {}),
+                [productid]: {
+                    ...((prev[categoryid] || {})[productid] || {}),
+                    [name]: value
+                }
+            }
         }));
     };
 
-    const addProduct = (categoryid) => {
-        const newProduct = newProducts[categoryid];
-        setMenu(prev => {
-            const newMenu = [...prev];
-            const categoryIndex = newMenu.findIndex(cat => cat.categoryid === categoryid);
-            if (!newMenu[categoryIndex].products) {
-                newMenu[categoryIndex].products = [];
+    const handleAddonChange = (categoryid, productid, e) => {
+        const { name, value } = e.target;
+        setNewAddons(prev => ({
+            ...prev,
+            [categoryid]: {
+                ...(prev[categoryid] || {}),
+                [productid]: {
+                    ...((prev[categoryid] || {})[productid] || {}),
+                    [name]: value
+                }
             }
-            newMenu[categoryIndex].products = [...newMenu[categoryIndex].products, { ...newProduct, temporaryId: Date.now() }];
-            return newMenu;
-        });
-        setAddedItems(prev => [...prev, { ...newProduct, categoryid }]);
-        setNewProducts(prev => ({ ...prev, [categoryid]: { product_name: '', description: '', price: '', menu_order: '' } }));
+        }));
     };
 
-    const deleteItem = (item) => {
-        console.log(`item to delete ${JSON.stringify(item)}`)
-        setDeletedItems(prev => [...prev, item]);
-    
-        if (item.categoryid) {
-            // It's a product deletion
-            setMenu(prev => prev.map(category => {
-                if (category.categoryid === item.categoryid) {
-                    return {
-                        ...category,
-                        products: category.products.filter(product => product.productid !== item.productid)
-                    };
-                }
-                return category;
-            }));
-        } else {
-            // It's a category deletion
-            setMenu(prev => prev.filter(category => category.categoryid !== item.categoryid));
+    const updateCategory = (category, categoryId) => {
+        // if category is null, delete the category
+        if (!category) {
+            axios.delete(`${apiUrl}/menu/category/${categoryId}`)
+            .then(() => {
+                setMenu(prev => prev.filter(c => c.categoryid !== categoryId));
+            })
+            .catch(error => {
+                console.error('Error deleting category:', error);
+            });
+            return;
         }
-    };    
+        // update existing category
+        const existingCategoryIndex = menu.findIndex(cat => cat.categoryid === categoryId);
+        if (existingCategoryIndex !== -1) {
+            const updatedMenu = [...menu];
+            updatedMenu[existingCategoryIndex] = { ...category, categoryid: categoryId };
+            setMenu(updatedMenu);
+        } else { // add new category
+            setMenu(prev => [...prev, { ...category, categoryid: categoryId, items: [] }]);
+        }
+        // update the tags/addons for the category
+        console.log(category);
+        if (category && category.items) {
+            const catId = category.categoryid || categoryId;
+            category.items.forEach((item) => {
+                const productId = item.productid;
+                if (newTags[catId] && newTags[catId][productId]?.tags) {
+                    const tag_ids = newTags[catId][productId].tags.map(tag => tag.tagid);
+                    axios.post(`${apiUrl}/menu/linkTag`, { product_id: productId, tag_ids })
+                    .catch(error => console.error('Error updating tags:', error));
+                }
+                if (newAddons[catId] && newAddons[catId][productId]?.addons) {
+                    const addon_ids = newAddons[catId][productId].addons.map(addon => addon.addonid);
+                    axios.post(`${apiUrl}/menu/linkAddon`, { product_id: productId, addon_ids })
+                    .catch(error => console.error('Error updating addons:', error));
+                }
+            });
+        }
+    };
 
     const saveChanges = () => {
-        deletedItems.forEach(item => {
-            const endpoint = item.category_name ? 'category' : 'item';
-            axios.delete(`${apiUrl}/menu/${endpoint}/${item.productid}`)
-            .then(response => {
-                console.log('Item deleted:', response.data);
-            })
+        // Update tags
+        Object.keys(newTags).forEach(itemid => {
+            const tag_ids = newTags[itemid].tags.map(tag => tag.tagid);
+            axios.post(`${apiUrl}/menu/linkTag`, { item_id: itemid, tag_ids })
             .catch(error => {
-                console.error('Error deleting item:', error);
+                console.error('Error updating tags:', error);
             });
         });
 
-        addedItems.forEach(item => {
-            axios.post(`${apiUrl}/menu/addItem`, item)
-            .then(response => {
-                console.log('Item added:', response.data);
-            })
+        // Update addons
+        Object.keys(newAddons).forEach(itemid => {
+            const addon_ids = newAddons[itemid].addons.map(addon => addon.addonid);
+            axios.post(`${apiUrl}/menu/linkAddon`, { item_id: itemid, addon_ids })
             .catch(error => {
-                console.error('Error adding item:', error);
+                console.error('Error updating addons:', error);
             });
         });
-
-        setIsEditMode(false);
-        setDeletedItems([]);
-        setAddedItems([]);
     };
 
-    const cancelChanges = () => {
-        axios.get(`${apiUrl}/menu`)
-        .then(response => {
-            const menuData = processMenuData(response.data);
-            setMenu(menuData);
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
+    const cancelChanges = (categoryid) => {
+        // Clear new tags and addons
+        setNewTags(prev => {
+            delete prev[categoryid];
+            return prev;
         });
-        setIsEditMode(false);
-        setDeletedItems([]);
-        setAddedItems([]);
+        setNewAddons(prev => {
+            delete prev[categoryid];
+            return prev;
+        });
+    }
+
+    const openPopup = (item) => {
+        setPopupItem(item);
     };
 
-    const categories = menu.filter(item => item.categoryname);
+    const closePopupItem = () => {
+        setPopupItem(null);
+    };
+
+    const closePopup = () => {
+        setPopup(false);
+    }
 
     return (
         <div>
             <div className="route-title-container">
                 <h1>Menu</h1>
             </div>
-            <div className="center-button">
-                {isEditMode ? (
-                    <>
-                        <button onClick={saveChanges}>Save</button>
-                        <button onClick={cancelChanges}>Cancel</button>
-                    </>
-                ) : (
-                    isAuthenticated && <button onClick={toggleEditMode}>Edit Mode</button>
-                )}
-            </div>
-            {categories.map((category, index) => (
-                (isEditMode || (category.products && category.products.length > 0)) && (
-                    <MenuSection
-                        key={index}
-                        category={category}
-                        products={category.products}
-                        isEditMode={isEditMode}
-                        handleProductChange={handleProductChange}
-                        addProduct={addProduct}
-                        deleteItem={deleteItem}
-                        newProducts={newProducts} // Pass down the newProducts state
-                    />
-                )
-            ))}
-            {isEditMode && (
-                <div className="new-category">
-                    <h2>Add New Category</h2>
-                    <div className="new-category-inputs">
-                        <input
-                            type="text"
-                            name="category_name"
-                            placeholder="Category Name"
-                            value={newCategory.category_name}
-                            onChange={handleCategoryChange}
-                        />
-                        <input
-                            type="text"
-                            name="description"
-                            placeholder="Description"
-                            value={newCategory.description}
-                            onChange={handleCategoryChange}
-                        />
-                        <input
-                            type="number"
-                            name="menu_order"
-                            placeholder="Menu Order"
-                            value={newCategory.menu_order}
-                            onChange={handleCategoryChange}
-                        />
-                        <button onClick={addCategory}>Add Category</button>
-                    </div>
+
+            {isAuthenticated && (
+                <div className="open-popup-btn">
+                    <button onClick={() => setPopup(true)}>Edit Tags and Addons</button>
                 </div>
+            )}
+
+            {menu.map((category, index) => (            
+                <MenuSection
+                    key={index}
+                    category={category}
+                    openPopup={openPopup}
+                    isAuthenticated={isAuthenticated}
+                    updateCategory={updateCategory}
+                    cancelChanges={cancelChanges}
+                />
+            ))}
+            <MenuSection
+                category={{ categoryid: -1, categoryname: '', description: '', menuorder: 0, items: [] }}
+                openPopup={openPopup}
+                isAuthenticated={isAuthenticated}
+                updateCategory={updateCategory}
+            />
+            {popupItem && (
+                <TagAddonLinker
+                    allTags={tags}
+                    allAddons={addons}
+                    item={popupItem}
+                    closePopup={closePopupItem}
+                    handleTagChange={handleTagChange}
+                    handleAddonChange={handleAddonChange}
+                />
+            )}
+            {popup && (
+                <TagAddonManager 
+                    closePopup={closePopup}
+                />
             )}
         </div>
     );

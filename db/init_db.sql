@@ -1,8 +1,6 @@
 -- Customers table
 CREATE TABLE Parties (
     PartyID SERIAL PRIMARY KEY,
-    Notes TEXT,
-    PartySize INT DEFAULT 1,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     LeftAt TIMESTAMP
 );
@@ -38,31 +36,44 @@ CREATE TABLE Categories (
 -- Products table
 CREATE TABLE Items (
     ProductID SERIAL PRIMARY KEY,
-    ProductName VARCHAR(100),
+    ProductName VARCHAR(100) NOT NULL,
     MenuOrder INT,
     Description TEXT,
-    Price DECIMAL(10, 2),
+    Price DECIMAL(10, 2) NOT NULL,
     CategoryID INT,
-    IsDeleted Boolean DEFAULT FALSE,
+    IsHidden Boolean DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE SET NULL
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE CASCADE
 );
 
--- Discount table
-CREATE TABLE Discounts(
-    DiscountID SERIAL PRIMARY KEY,
-    DiscountName VARCHAR(20) UNIQUE NOT NULL,
-    Amount DECIMAL(10, 2)
+CREATE TABLE Tags (
+    TagID SERIAL PRIMARY KEY,
+    TagName VARCHAR(20) UNIQUE NOT NULL,
+    TagColor VARCHAR(7) DEFAULT '#000000'
 );
 
--- Discount Combination table
-CREATE TABLE DiscountCombinations(
-    CombinationID SERIAL PRIMARY KEY,
-    DiscountID INT,
-    CategoryID INT,
-    Quantity INT,
-    FOREIGN KEY (DiscountID) REFERENCES Discounts(DiscountID) ON DELETE CASCADE,
-    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+CREATE TABLE ItemTags (
+    ItemID INT,
+    TagID INT,
+    FOREIGN KEY (ItemID) REFERENCES Items(ProductID) ON DELETE CASCADE,
+    FOREIGN KEY (TagID) REFERENCES Tags(TagID) ON DELETE CASCADE,
+    PRIMARY KEY (ItemID, TagID)
+);
+
+CREATE TABLE AddOns (
+    AddOnID SERIAL PRIMARY KEY,
+    AddOnName VARCHAR(100),
+    Price DECIMAL(10, 2),
+    Category VARCHAR(20),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE AvailableAddOns(
+    ItemID INT,
+    AddOnID INT,
+    FOREIGN KEY (ItemID) REFERENCES Items(ProductID) ON DELETE CASCADE,
+    FOREIGN KEY (AddOnID) REFERENCES AddOns(AddOnID) ON DELETE CASCADE,
+    PRIMARY KEY (ItemID, AddOnID)
 );
 
 -- Payment methods table
@@ -80,6 +91,7 @@ CREATE TABLE Orders (
     PaymentMethod VARCHAR(20),
     PaidTime TIMESTAMP,
     OrderType VARCHAR(20),
+    Notes TEXT,
     FOREIGN KEY (PartyID) REFERENCES Parties(PartyID),
     FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID),
     FOREIGN KEY (PaymentMethod) REFERENCES PaymentMethods(MethodName)
@@ -89,11 +101,12 @@ CREATE TABLE Orders (
 CREATE TABLE OrderItems (
     OrderItemID SERIAL PRIMARY KEY,
     OrderID INT,
-    ProductID INT,
+    ProductName VARCHAR(100),
+    AddOns JSONB,
     Quantity INT,
+    UnitPrice DECIMAL(10, 2),
     Delivered Boolean DEFAULT FALSE,
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
-    FOREIGN KEY (ProductID) REFERENCES Items(ProductID)
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
 );
 
 -- OrderDetail view
@@ -110,8 +123,9 @@ SELECT
     JSON_AGG(
         JSON_BUILD_OBJECT(
             'OrderItemID', oi.OrderItemID,
-            'ProductID', oi.ProductID,
-            'ProductName', i.ProductName,
+            'ProductName', oi.ProductName,
+            'AddOns', oi.AddOns,
+            'UnitPrice', oi.UnitPrice,
             'Quantity', oi.Quantity,
             'Delivered', oi.Delivered
         )
@@ -121,7 +135,5 @@ FROM
     Orders o
 JOIN 
     OrderItems oi ON o.OrderID = oi.OrderID
-JOIN 
-    Items i ON oi.ProductID = i.ProductID
 GROUP BY 
     o.OrderID;

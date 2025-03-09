@@ -1,13 +1,13 @@
 .order-tickets-wrapper {
-  overflow-x: auto; /* Enable horizontal scrolling */
-  width: 99vw;
+  overflow-y: auto; /* Enable vertical scrolling */
+  height: 90vh;
 }
 
 .order-tickets-container {
-  display: inline-flex; /* Change to inline-flex for horizontal scrolling */
-  flex-wrap: nowrap; /* Prevent wrapping */
-  align-items: flex-start; /* Align tickets at the top */
-  gap: 10px; /* Add space between tickets */
+  display: flex; /* Change to flex for vertical layout */
+  flex-direction: column; /* Stack tickets vertically */
+  align-items: flex-start; /* Align tickets at the start */
+  gap: 5px; /* Add space between tickets */
 }
 
 .order-ticket {
@@ -18,6 +18,12 @@
   border-radius: 5px;
   width: 200px;
   background-color: rgba(255, 255, 255, 0.4); /* Semi-transparent white background */
+}
+
+.order-ticket h3 {
+  cursor: pointer; /* Change cursor to pointer */
+  color: blue; /* Change text color to blue */
+  text-decoration: underline; /* Add underline to text */
 }
 
 .order-ticket.take-out {
@@ -34,6 +40,11 @@
   justify-content: space-between; /* Align content to the sides */
   align-items: center;
   margin-bottom: 10px;
+  padding: 0 5px;
+  height: 40px;
+  position: relative; /* Add position relative for progress bar */
+  background-color: rgba(255, 0, 0, 0.3); /* Transparent red background */
+  user-select: none; /* Disable text selection */
 }
 
 .button {
@@ -46,12 +57,14 @@
   cursor: pointer;
 }
 
-.button.prepared {
-  background-color: green;
-}
-
 .button.discard {
-  background-color: green; /* Change color to green */
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: none;
   display: block;
-  margin: 10px auto 0; /* Center horizontally */
+  margin: 10px auto 0;
+  cursor: pointer;
 }

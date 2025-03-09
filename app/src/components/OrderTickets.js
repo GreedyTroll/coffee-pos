@@ -4,7 +4,7 @@ import './OrderTickets.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const OrderTickets = ({ onOrderTicketClick }) => {
+const OrderTickets = ({ onOrderTicketClick, onOrderTopicClick, partyUpdate }) => {
     const axios = useAxios();
 
     const [orders, setOrders] = useState([]);
@@ -13,7 +13,14 @@ const OrderTickets = ({ onOrderTicketClick }) => {
         const fetchOrders = async () => {
             try {
                 const response = await axios.get(`${apiUrl}/orders`);
-                setOrders(response.data);
+                const ordersWithPreparedQuantity = response.data.map(order => ({
+                    ...order,
+                    items: order.items.map(item => ({
+                        ...item,
+                        PreparedQuantity: item.Delivered ? item.Quantity : 0 // Initialize PreparedQuantity based on Delivered status
+                    }))
+                }));
+                setOrders(ordersWithPreparedQuantity);
             } catch (error) {
                 console.error('Error fetching orders:', error);
             }
@@ -22,44 +29,43 @@ const OrderTickets = ({ onOrderTicketClick }) => {
         fetchOrders();
     }, []);
 
+    useEffect(() => {
+        if(partyUpdate && partyUpdate.party) {
+            setOrders(orders.map(order => {
+                if (partyUpdate.party === order.partyid) {
+                    const updatedOrder = { ...order };
+                    updatedOrder.seat_ids = partyUpdate.seats;
+                    return updatedOrder;
+                }
+                return order;
+            }));
+        }
+        else return;
+    }, [partyUpdate]);
+
     // Sort orders by orderdate
     const sortedOrders = orders.sort((a, b) => new Date(a.orderdate) - new Date(b.orderdate));
 
-    const handlePreparedChange = (orderId, orderItemId, Delivered) => {
-        // Optimistically update the state
-        setOrders(prevOrders =>
-            prevOrders
-                .map(order =>
-                    order.orderid === orderId
-                        ? {
-                            ...order,
-                            items: order.items.map(item =>
-                                item.OrderItemID === orderItemId ? { ...item, Delivered } : item
-                            ),
-                          }
-                        : order
-                )
-        );
+    const handlePreparedChange = (orderId, orderItemId) => {
+        const updatedOrders = [...orders];
+        const orderIndex = updatedOrders.findIndex(order => order.orderid === orderId);
+        if (orderIndex !== -1) {
+            const itemIndex = updatedOrders[orderIndex].items.findIndex(item => item.OrderItemID === orderItemId);
+            if (itemIndex !== -1) {
+                const updatedItem = { ...updatedOrders[orderIndex].items[itemIndex] };
+                if(updatedItem.PreparedQuantity === updatedItem.Quantity)
+                    updatedItem.PreparedQuantity = 0; // Reset PreparedQuantity to zero
+                else 
+                    updatedItem.PreparedQuantity =  updatedItem.Quantity;
+                updatedOrders[orderIndex].items[itemIndex] = updatedItem;
 
-        // Send the request to the backend
-        axios.put(`${apiUrl}/orders/delivered/${orderItemId}`).catch(error => {
-            console.error('Error updating item preparation status:', error);
-
-            // Revert the optimistic update if the request fails
-            setOrders(prevOrders =>
-                prevOrders
-                    .map(order =>
-                        order.orderid === orderId
-                            ? {
-                                ...order,
-                                items: order.items.map(item =>
-                                    item.OrderItemID === orderItemId ? { ...item, Delivered: !Delivered } : item
-                                ),
-                              }
-                            : order
-                    )
-            );
-        });
+                setOrders(updatedOrders);
+                axios.put(`${apiUrl}/orders/delivered/${orderItemId}`).then(() => {
+                }).catch(error => {
+                    console.error('Error updating item preparation status:', error);
+                });
+            }
+        }
     };
 
     const handleDiscardOrder = async (orderId) => {
@@ -77,28 +83,42 @@ const OrderTickets = ({ onOrderTicketClick }) => {
                     <div
                         key={order.orderid}
                         className={`order-ticket ${order.ordertype === 'Take-out' ? 'take-out' : ''}`}
-                        style={{ display: 'inline-block', margin: '10px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
                         onClick={() => onOrderTicketClick(order.partyid)} // Call handler on click
                     >
-                        <h3>{new Date(order.orderdate).toLocaleTimeString()}</h3>
+                        <h3 onClick={() => onOrderTopicClick(order.orderid)}>{new Date(order.orderdate).toLocaleTimeString()}</h3>
                         <p>Total: {Number(order.totalamount).toFixed(0)}</p>
                         {order.seat_ids.length > 0 && (
                           <p>Seats: {order.seat_ids.join(', ')}</p> // Display seat IDs
                         )}
                         <ul>
                             {order.items.map(item => (
-                                <li key={item.OrderItemID} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>{item.ProductName} - {item.Quantity}</span>
-                                    <button
-                                        className={`button ${item.Delivered ? 'prepared' : ''}`}
-                                        onClick={() => handlePreparedChange(order.orderid, item.OrderItemID, !item.Delivered)}
-                                    >
-                                        {item.Delivered ? 'Prepared' : 'Preparing...'}
-                                    </button>
+                                <li
+                                    key={item.OrderItemID}
+                                    onClick={() => handlePreparedChange(order.orderid, item.OrderItemID)}
+                                >
+                                    <span style={{ float: 'left' }}>
+                                        {item.ProductName}
+                                        {item.AddOns && item.AddOns.length > 0 && `(${item.AddOns.map(a => a.name).join(', ')})`}
+                                    </span>
+                                    <span style={{ float: 'right' }}>
+                                        {item.PreparedQuantity}/{item.Quantity}
+                                    </span>
+                                    <div
+                                        className="progress-bar"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            height: '100%',
+                                            width: `${(item.PreparedQuantity / item.Quantity) * 100}%`,
+                                            backgroundColor: 'rgb(3, 158, 3)',
+                                            zIndex: -1,
+                                        }}
+                                    ></div>
                                 </li>
                             ))}
                         </ul>
-                        {order.items.every(item => item.Delivered) && (
+                        {order.items.every(item => item.PreparedQuantity === item.Quantity) && (
                             <button className="button discard" onClick={() => handleDiscardOrder(order.orderid)}>
                                 Complete!
                             </button>

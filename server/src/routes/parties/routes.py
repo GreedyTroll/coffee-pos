@@ -32,16 +32,13 @@ def addParty():
         return {"message": 'no data received'}, 400
     
     try:
-        new_party = Party(
-            partysize=data['partysize'],
-            notes=data['notes']
-        )
+        new_party = Party()
     
         db.session.add(new_party)
         db.session.commit() # makes all the changes in the current transaction permanent (cannot be rolled back)
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.error('{e}')
+        logger.error(f'{e}')
         return {'Error': f'{e}'}, 500
     
     return {'success': True, 'party_id': new_party.partyid}, 200
@@ -67,13 +64,11 @@ def updateParty(id):
     try:
         if 'partysize' in data:
             party.partysize = data['partysize']
-        if 'notes' in data:
-            party.notes = data['notes']
-        
+
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.error('{e}')
+        logger.error(f'{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
@@ -103,7 +98,7 @@ def deactivateParty(id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.error('{e}')
+        logger.error(f'{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True, 'released_seats': json.dumps(released_seats)}, 200
@@ -134,7 +129,7 @@ def assignSeats(party_id):
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.error('{e}')
+        logger.error(f'{e}')
         return {'Error': f'{e}'}, 500
 
     return {'success': True}, 200
