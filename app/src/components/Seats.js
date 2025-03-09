@@ -101,6 +101,7 @@ const Seats = ({ onSeatClick, selectedParty, controlMode, deactivatePartyId }) =
                 !event.target.closest('[aria-label]') &&
                 !event.target.closest('.seat-paper') && 
                 !event.target.closest('.order-container') && 
+                !event.target.closest('.order-manager-container') &&
                 !event.target.closest('.order-tickets-wrapper')) {
                     setSelectedSeats([]);
                     onSeatClick([], null);
