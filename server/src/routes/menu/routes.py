@@ -80,10 +80,11 @@ def addItem():
         
         # Replace null values with defaults if keys are not present in data
         new_item = Item(
-            productname=data.get('product_name', 'Unknown Product'),
+            productname=data.get('product_name', None),
             menuorder=data.get('menu_order', 0),
             description=data.get('description', ''),
             price=float(data.get('price', 0)),
+            remainingstock=int(data.get('remaining_stock', None)),
             categoryid=category.categoryid
         )
     
@@ -121,6 +122,7 @@ def updateItem(id):
         item.description = data.get('description', item.description)
         item.price = float(data.get('price', item.price))
         item.categoryid = data.get('categoryid', item.categoryid)
+        item.remainingstock = data.get('remaining_stock', item.remainingstock)
         
         db.session.commit()
     except SQLAlchemyError as e:
@@ -150,7 +152,7 @@ def deleteItem(id):
 
     return {'success': True}, 200
 
-@menu_bp.route('/item/<int:id>/setHidden', methods=['PUT'])
+@menu_bp.route('/item/setHidden/<int:id>', methods=['PUT'])
 @token_required
 def setItemHidden(id):
     if not id:

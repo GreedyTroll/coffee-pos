@@ -105,6 +105,7 @@ def newOrder():
         for item in data['items']:
             product = Item.query.get(item['product_id'])
             if not product: # make sure product in request exist
+                db.session.rollback()
                 return {"message": f"Product with id {item['product_id']} not found"}, 400
 
             addon_total = 0
@@ -116,11 +117,17 @@ def newOrder():
                         addons.append({'name': addon.addonname, 'price': float(addon.price)})
                         addon_total += float(addon.price)
                     else:
+                        db.session.rollback()
                         return {"message": f"Addon with id {addon_id} not found"}, 400
-
+            
+            if product.remainingstock and int(item['quantity']) > product.remainingstock:
+                db.session.rollback()
+                return {"message": f"Quantity for product with id {item['product_id']} exceeds remaining stock"}, 400
+            
             order_item = OrderItem(
                 orderid = new_order.orderid,
-                quantity=item['quantity'],
+                productid=product.productid,
+                quantity=int(item['quantity']),
                 productname=product.productname,
                 addons = addons, 
                 unitprice=int(product.price) + addon_total
@@ -213,7 +220,12 @@ def updateOrder(id):
             for item in data['items']:
                 product = Item.query.get(item['product_id'])
                 if not product:
+                    db.session.rollback()
                     return {"message": f"Product with id {item['product_id']} not found"}, 400
+                
+                if product.remainingstock and int(item['quantity']) > product.remainingstock:
+                    db.session.rollback()
+                    return {"message": f"Quantity for product with id {item['product_id']} exceeds remaining stock"}, 400
 
                 order_item = OrderItem(
                     orderid = order.orderid,
