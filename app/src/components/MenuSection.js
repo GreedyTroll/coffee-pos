@@ -263,7 +263,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                     <div key={index} className="menu-row">
                         <div className="menu-item-name">
                             {product.productname || "No Product Name"}
-                            {product.remainingstock && ` (${product.remainingstock})`}
+                            {product.remainingstock !== null && ` (${product.remainingstock})`}
                         </div>
                         <div className="menu-item-description">{product.description || ""}</div>
                         <div className="product-tags-container">
