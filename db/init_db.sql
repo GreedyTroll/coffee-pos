@@ -41,6 +41,7 @@ CREATE TABLE Items (
     Description TEXT,
     Price DECIMAL(10, 2) NOT NULL,
     CategoryID INT,
+    RemainingStock INT CHECK (RemainingStock >= 0),
     IsHidden Boolean DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE CASCADE
@@ -101,12 +102,14 @@ CREATE TABLE Orders (
 CREATE TABLE OrderItems (
     OrderItemID SERIAL PRIMARY KEY,
     OrderID INT,
+    ProductID INT,
     ProductName VARCHAR(100),
     AddOns JSONB,
     Quantity INT,
     UnitPrice DECIMAL(10, 2),
     Delivered Boolean DEFAULT FALSE,
-    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE,
+    FOREIGN KEY (ProductID) REFERENCES Items(ProductID) ON DELETE SET NULL
 );
 
 -- OrderDetail view

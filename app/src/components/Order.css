@@ -124,7 +124,7 @@ Order contents
 }
 
 .category {
-  width: 200px; /* Each category occupies around 20% of the width */
+  width: 126px;
   margin: 3px;
   flex-direction: column;
 }
@@ -148,13 +148,42 @@ Order contents
 .item {
   width: 100px;
   height: 80px;
-  padding: 10px;
+  padding: 5px;
   border: 1px solid #ccc;
   margin: 2px;
   cursor: pointer;
   user-select: none; /* Disable text selection */
-  align-items: center; /* Center align vertically */
-  justify-content: center; /* Center align horizontally */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure price and stock are at the bottom */
+  align-items: flex-start; /* Align item name to the top */
+  position: relative; /* Enable absolute positioning for item-details */
+}
+
+.item .item-name {
+  align-self: flex-start; /* Align item name to the left */
+  font-size: 1.2em; /* Adjust font size if necessary */
+  color: #333; /* Adjust color if necessary */
+}
+
+.item .item-details {
+  display: flex;
+  justify-content: space-between; /* Ensure price and stock are at opposite ends */
+  width: 90%; /* Take full width of the item */
+  position: absolute; /* Position relative to the item */
+  bottom: 5px; /* Position at the bottom */
+}
+
+.item .item-price {
+  margin-left: auto; /* Align price to the right */
+  font-size: 0.8em; /* Adjust font size if necessary */
+  color: #555; /* Adjust color if necessary */
+}
+
+.item .item-stock {
+  margin-right: auto; /* Align stock to the left */
+  font-size: 0.8em; /* Adjust font size if necessary */
+  color: #555; /* Adjust color if necessary */
 }
 
 /**

@@ -1,7 +1,7 @@
 from enum import Enum
 from sqlalchemy.sql import func
 from app import db
-from sqlalchemy import PrimaryKeyConstraint
+from sqlalchemy import PrimaryKeyConstraint, CheckConstraint
 
 def model_to_dict(model):
     result = {}
@@ -51,6 +51,7 @@ class Item(db.Model):
     description = db.Column(db.Text)
     price = db.Column(db.Numeric(10, 2))
     categoryid = db.Column(db.Integer, db.ForeignKey('categories.categoryid'))
+    remainingstock = db.Column(db.Integer)
     ishidden = db.Column(db.Boolean, default=False)
     createdat = db.Column(db.DateTime, default=func.now())
 
@@ -104,6 +105,7 @@ class OrderItem(db.Model):
     __tablename__ = 'orderitems'
     orderitemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     orderid = db.Column(db.Integer, db.ForeignKey('orders.orderid'))
+    productid = db.Column(db.Integer, db.ForeignKey('items.productid', ondelete='SET NULL'))
     productname = db.Column(db.String(100))
     addons = db.Column(db.JSON)
     quantity = db.Column(db.Integer)

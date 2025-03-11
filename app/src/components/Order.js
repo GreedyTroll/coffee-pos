@@ -51,6 +51,11 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         JSON.stringify(o.addons.map(a => a.addonid).sort()) ===
         JSON.stringify(selectedAddons.map(a => a.addonid).sort())
       );
+      const currentQuantity = existingItemIndex !== -1 ? prevOrder[existingItemIndex].quantity : 0;
+      if (product.remainingstock !== null && currentQuantity + 1 > product.remainingstock) {
+        alert('Cannot add more items than available in stock.');
+        return prevOrder;
+      }
       if (existingItemIndex !== -1) {
         const updatedOrder = [...prevOrder];
         updatedOrder[existingItemIndex].quantity += 1;
@@ -93,6 +98,11 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
   const handleIncreaseQuantity = (index) => {
     setOrder(prevOrder => {
       const updatedOrder = [...prevOrder];
+      const product = menu.flatMap(category => category.items).find(item => item.productid === updatedOrder[index].product_id);
+      if (product.remainingstock !== null && updatedOrder[index].quantity + 1 > product.remainingstock) {
+        alert('Cannot add more items than available in stock.');
+        return prevOrder;
+      }
       updatedOrder[index].quantity += 1;
       return updatedOrder;
     });
@@ -153,15 +163,17 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
               </select>
             </div>
             <div className="order-type">
-              <label>
-                <input
-                  type="radio"
-                  value="Dine-in"
-                  checked={orderType === 'Dine-in'}
-                  onChange={(e) => setOrderType(e.target.value)}
-                />
-                Dine-in
-              </label>
+              {party && (
+                <label>
+                  <input
+                    type="radio"
+                    value="Dine-in"
+                    checked={orderType === 'Dine-in'}
+                    onChange={(e) => setOrderType(e.target.value)}
+                  />
+                  Dine-in
+                </label>
+              )}
               <label>
                 <input
                   type="radio"
@@ -205,7 +217,13 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
                 <div className="items">
                   {menu.find(category => category.categoryid === categoryId)?.items.map(item => (
                     <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
-                      {item.productname}  ${Math.round(item.price)}
+                      <span className="item-name">{item.productname}</span>
+                      <div className="item-details">
+                        {item.remainingstock !== null && (
+                          <span className="item-stock">stock:{item.remainingstock}</span>
+                        )} 
+                        <span className="item-price">${Math.round(item.price)}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
