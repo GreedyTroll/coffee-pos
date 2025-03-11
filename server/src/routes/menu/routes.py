@@ -122,8 +122,7 @@ def updateItem(id):
         item.description = data.get('description', item.description)
         item.price = float(data.get('price', item.price))
         item.categoryid = data.get('categoryid', item.categoryid)
-        item.remainingstock = data.get('remaining_stock', item.remainingstock)
-        
+        item.remainingstock = data.get('remaining_stock', None)
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
