@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party, Seat, Addon  # Import Seat model
+from common.models import db, Order, OrderItem, Item, OrderDetail, PaymentMethod, Party, Seat, Addon
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone, timedelta
 import logging
@@ -123,6 +123,8 @@ def newOrder():
             if product.remainingstock and int(item['quantity']) > product.remainingstock:
                 db.session.rollback()
                 return {"message": f"Quantity for product with id {item['product_id']} exceeds remaining stock"}, 400
+            elif product.remainingstock:
+                product.remainingstock = product.remainingstock - int(item['quantity'])
             
             order_item = OrderItem(
                 orderid = new_order.orderid,
