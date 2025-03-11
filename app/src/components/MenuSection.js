@@ -32,6 +32,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
 
     const handleExistingProductChange = (e, index) => {
         const { name, value } = e.target;
+            console.log("name:", name, "value:", value);
         setLocalCategory((prev) => {
             const updatedProducts = [...prev.items];
             updatedProducts[index] = { ...updatedProducts[index], [name]: value };
@@ -86,7 +87,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
     };
 
     const addProduct = () => {
-        const new_product = {...newProduct, categoryid: localCategory.categoryid};
+        const new_product = {...newProduct, categoryid: localCategory.categoryid, remainingstock: null};
         setAddedItems([...addedItems, new_product]);
         const updatedProducts = [...localCategory.items, new_product];
         const updatedCategory = { ...localCategory, items: updatedProducts };
@@ -172,20 +173,21 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
     };
 
     const toggleEditStock = (index) => {
+        setUpdatedItems((prev) => {
+            const existing = localCategory.items[index];
+            if (!existing.productid) return prev;
+            const updatedItem = { ...existing, remainingstock: existing.remainingstock !== null ? null : 0 };
+            console.log("updatedItem:", updatedItem);
+            const found = prev.find((p) => p.productid === updatedItem.productid);
+            return found
+                ? prev.map((p) => (p.productid === updatedItem.productid ? updatedItem : p))
+                : [...prev, updatedItem];
+        });
         setLocalCategory((prev) => {
             const updatedProducts = [...prev.items];
             const product = updatedProducts[index];
             product.remainingstock = product.remainingstock !== null ? null : 0;
             return { ...prev, items: updatedProducts };
-        });
-        setUpdatedItems((prev) => {
-            const existing = localCategory.items[index];
-            if (!existing.productid) return prev;
-            const updatedItem = { ...existing, remainingstock: existing.remainingstock !== null ? null : 0 };
-            const found = prev.find((p) => p.productid === updatedItem.productid);
-            return found
-                ? prev.map((p) => (p.productid === updatedItem.productid ? updatedItem : p))
-                : [...prev, updatedItem];
         });
     };
 
@@ -203,6 +205,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                             placeholder="Category Name"
                             value={localCategory.categoryname}
                             onChange={handleCategoryChange}
+                            className="menu-item-name-edit"
                         />
                         <input
                             type="text"
@@ -210,6 +213,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                             placeholder="Description"
                             value={localCategory.description}
                             onChange={handleCategoryChange}
+                            className="menu-item-description-edit"
                         />
                         <input
                             type="number"
@@ -217,6 +221,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                             placeholder="Menu Order"
                             value={localCategory.menuorder}
                             onChange={handleCategoryChange}
+                            className="menu-item-order"
                         />
                         <button onClick={addCategory}>Add Category</button>
                     </div>
@@ -315,10 +320,11 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                     <div className="menu-row">
                         <input
                             type="text"
-                            placeholder="Add New Product..."
+                            placeholder="New Product Name"
                             name="productname"
                             value={newProduct.productname}
                             onChange={handleProductChange}
+                            className="menu-item-name-edit"
                         />
                         <input
                             type="text"
@@ -326,6 +332,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                             name="description"
                             value={newProduct.description}
                             onChange={handleProductChange}
+                            className="menu-item-description-edit"
                         />
                         <input
                             type="number"
@@ -333,6 +340,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                             name="price"
                             value={newProduct.price}
                             onChange={handleProductChange}
+                            className="menu-item-price-edit"
                         />
                         <input
                             type="number"
@@ -340,6 +348,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                             name="menuorder"
                             value={newProduct.menuorder}
                             onChange={handleProductChange}
+                            className="menu-item-order"
                         />
                         <button onClick={addProduct}>Add Product</button>
                     </div>
