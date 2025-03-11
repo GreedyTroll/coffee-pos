@@ -4,7 +4,7 @@ import './PartyManager.css';
 import Order from './Order';
 import OrderTickets from './OrderTickets';
 import OrderManager from './OrderManager';
-import Seats from './Seats'; // Import Seats component
+import Seats from './Seats';
 import {
   IconButton
 } from '@mui/material';
@@ -14,7 +14,7 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import DoneIcon from '@mui/icons-material/Done';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CloseIcon from '@mui/icons-material/Close';
-import EditNoteIcon from '@mui/icons-material/EditNote';
+import ChairIcon from '@mui/icons-material/Chair';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 
 const apiUrl = process.env.REACT_APP_API_URL;
@@ -208,7 +208,7 @@ const PartyManager = () => {
               {editMode === "edit" ? (
                 <div>
                   <IconButton onClick={handleCancelEdit} aria-label="CancelEdit">
-                    <EditNoteIcon sx={{ fontSize: 80, color: red[500] }} />
+                    <ChairIcon sx={{ fontSize: 80, color: red[500] }} />
                   </IconButton>
                   <IconButton onClick={handleSaveParty} aria-label="Save">
                     <DoneIcon sx={{ fontSize: 80 }} />
@@ -221,7 +221,7 @@ const PartyManager = () => {
                   </IconButton>
                   <div> {/* add div so that the click event listener can correctly target the button */}
                   <IconButton onClick={handleSetEdit} aria-label="Edit">
-                    <EditNoteIcon sx={{ fontSize: 80 }} />
+                    <ChairIcon sx={{ fontSize: 80 }} />
                   </IconButton>
                   </div>
                   {deactivatePartyId === selectedParty.partyid ? (
