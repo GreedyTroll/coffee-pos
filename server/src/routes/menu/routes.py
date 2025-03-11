@@ -12,7 +12,7 @@ menu_bp = Blueprint('menu', __name__)
 @menu_bp.route('', methods=['GET'])
 def menu():
     categories = db.session.query(Category).order_by(Category.menuorder).all()
-    items = db.session.query(Item).filter(Item.ishidden == False).order_by(Item.menuorder).all()
+    items = db.session.query(Item).order_by(Item.menuorder).all()
     
     item_tags = db.session.query(ItemTag).all()
     tags = db.session.query(Tag).all()
@@ -123,6 +123,7 @@ def updateItem(id):
         item.price = float(data.get('price', item.price))
         item.categoryid = data.get('categoryid', item.categoryid)
         item.remainingstock = data.get('remaining_stock', None)
+        item.ishidden = data.get('is_hidden', item.ishidden)
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()

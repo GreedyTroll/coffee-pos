@@ -100,7 +100,6 @@ const Menu = ({ isAuthenticated }) => {
             setMenu(prev => [...prev, { ...category, categoryid: categoryId, items: [] }]);
         }
         // update the tags/addons for the category
-        console.log(category);
         if (category && category.items) {
             const catId = category.categoryid || categoryId;
             category.items.forEach((item) => {
@@ -117,26 +116,6 @@ const Menu = ({ isAuthenticated }) => {
                 }
             });
         }
-    };
-
-    const saveChanges = () => {
-        // Update tags
-        Object.keys(newTags).forEach(itemid => {
-            const tag_ids = newTags[itemid].tags.map(tag => tag.tagid);
-            axios.post(`${apiUrl}/menu/linkTag`, { item_id: itemid, tag_ids })
-            .catch(error => {
-                console.error('Error updating tags:', error);
-            });
-        });
-
-        // Update addons
-        Object.keys(newAddons).forEach(itemid => {
-            const addon_ids = newAddons[itemid].addons.map(addon => addon.addonid);
-            axios.post(`${apiUrl}/menu/linkAddon`, { item_id: itemid, addon_ids })
-            .catch(error => {
-                console.error('Error updating addons:', error);
-            });
-        });
     };
 
     const cancelChanges = (categoryid) => {

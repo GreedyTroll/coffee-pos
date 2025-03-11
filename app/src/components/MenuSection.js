@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import useAxios from '../hooks/useAxiosAuth';
 import './MenuSection.css';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -139,7 +141,8 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                 price: item.price,
                 remaining_stock: item.remainingstock,
                 menu_order: item.menuorder,
-                categoryid: item.categoryid
+                categoryid: item.categoryid,
+                is_hidden: item.ishidden
             };
             axios.put(`${apiUrl}/menu/item/${item.productid}`, updatedItem)
             .catch(error => {
@@ -177,7 +180,6 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
             const existing = localCategory.items[index];
             if (!existing.productid) return prev;
             const updatedItem = { ...existing, remainingstock: existing.remainingstock !== null ? null : 0 };
-            console.log("updatedItem:", updatedItem);
             const found = prev.find((p) => p.productid === updatedItem.productid);
             return found
                 ? prev.map((p) => (p.productid === updatedItem.productid ? updatedItem : p))
@@ -187,6 +189,23 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
             const updatedProducts = [...prev.items];
             const product = updatedProducts[index];
             product.remainingstock = product.remainingstock !== null ? null : 0;
+            return { ...prev, items: updatedProducts };
+        });
+    };
+
+    const toggleVisibility = (index) => {
+        setUpdatedItems((prev) => {
+            const existing = localCategory.items[index];
+            if (!existing.productid) return prev;
+            const updatedItem = { ...existing, ishidden: !existing.ishidden };
+            const found = prev.find((p) => p.productid === updatedItem.productid);
+            return found
+                ? prev.map((p) => (p.productid === updatedItem.productid ? updatedItem : p))
+                : [...prev, updatedItem];
+        });
+        setLocalCategory((prev) => {
+            const updatedProducts = [...prev.items];
+            updatedProducts[index] = { ...updatedProducts[index], ishidden: !updatedProducts[index].ishidden };
             return { ...prev, items: updatedProducts };
         });
     };
@@ -259,63 +278,64 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory, can
                 )}
             </div>
             <div className="menu-items">
-                {localCategory.items.map((product, index) => (
-                    <div key={index} className="menu-row">
-                        <div className="menu-item-name">
-                            {product.productname || "No Product Name"}
-                            {product.remainingstock !== null && ` (${product.remainingstock})`}
-                        </div>
-                        <div className="menu-item-description">{product.description || ""}</div>
-                        <div className="product-tags-container">
-                            {product.tags && product.tags.map(tag => (
-                                <span key={tag.tagid} className="tag-item">
-                                    {tag.tagname}
-                                </span>
-                            ))}
-                        </div>
-                        {!isEditMode && (
-                            <div className="menu-item-price">{product.price ? `${Math.round(product.price)}` : 0}</div>
-                        )}
-                        {isEditMode && (
-                            <>
-                                <input 
-                                    type="number"
-                                    name="price"
-                                    value={Math.round(product.price)}
-                                    onChange={(e) => handleExistingProductChange(e, index)}
-                                    className="menu-item-price-edit"
-                                />
-                                <input
-                                    type="number"
-                                    name="menuorder"
-                                    value={product.menuorder}
-                                    onChange={(e) => handleExistingProductChange(e, index)}
-                                    className="menu-item-order"
-                                />
-                                {product.remainingstock !== null ? (
+                {localCategory.items
+                    .filter(product => isEditMode || !product.ishidden)
+                    .map((product, index) => (
+                        <div key={index} className="menu-row">
+                            <div className="menu-item-name">
+                                {product.productname || "No Product Name"}
+                                {product.remainingstock !== null && ` (${product.remainingstock})`}
+                            </div>
+                            <div className="menu-item-description">{product.description || ""}</div>
+                            <div className="product-tags-container">
+                                {product.tags && product.tags.map(tag => (
+                                    <span key={tag.tagid} className="tag-item">
+                                        {tag.tagname}
+                                    </span>
+                                ))}
+                            </div>
+                            {!isEditMode && (
+                                <div className="menu-item-price">{product.price ? `${Math.round(product.price)}` : 0}</div>
+                            )}
+                            {isEditMode && (
+                                <>
+                                    <input 
+                                        type="number"
+                                        name="price"
+                                        value={Math.round(product.price)}
+                                        onChange={(e) => handleExistingProductChange(e, index)}
+                                        className="menu-item-price-edit"
+                                    />
                                     <input
                                         type="number"
-                                        name="remainingstock"
-                                        value={product.remainingstock}
+                                        name="menuorder"
+                                        value={product.menuorder}
                                         onChange={(e) => handleExistingProductChange(e, index)}
-                                        className="menu-item-stock"
+                                        className="menu-item-order"
                                     />
-                                ) : (
-                                    <span></span>
-                                )}
-                                <button onClick={() => toggleEditStock(index)}>
-                                    {product.remainingstock !== null ? "No Stock" : "Edit Stock"}
-                                </button>
-                            </>
-                        )}
-                        {isEditMode && (
-                            <>
-                                <button className="delete-button" onClick={() => deleteItem(product)}>Delete</button>
-                                <button className="edit-button" onClick={() => openPopup(product)}>Tags Addons</button>
-                            </>
-                        )}
-                    </div>
-                ))}
+                                    {product.remainingstock !== null ? (
+                                        <input
+                                            type="number"
+                                            name="remainingstock"
+                                            value={product.remainingstock}
+                                            onChange={(e) => handleExistingProductChange(e, index)}
+                                            className="menu-item-stock"
+                                        />
+                                    ) : (
+                                        <span></span>
+                                    )}
+                                    <button onClick={() => toggleEditStock(index)}>
+                                        {product.remainingstock !== null ? "No Stock" : "Edit Stock"}
+                                    </button>
+                                    <button onClick={() => toggleVisibility(index)}>
+                                        {product.ishidden ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    </button>
+                                    <button className="delete-button" onClick={() => deleteItem(product)}>Delete</button>
+                                    <button className="edit-button" onClick={() => openPopup(product)}>Tags Addons</button>
+                                </>
+                            )}
+                        </div>
+                    ))}
                 {isEditMode && (
                     <div className="menu-row">
                         <input

@@ -215,17 +215,19 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
                   {menu.find(category => category.categoryid === categoryId)?.categoryname}
                 </div>
                 <div className="items">
-                  {menu.find(category => category.categoryid === categoryId)?.items.map(item => (
-                    <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
-                      <span className="item-name">{item.productname}</span>
-                      <div className="item-details">
-                        {item.remainingstock !== null && (
-                          <span className="item-stock">stock:{item.remainingstock}</span>
-                        )} 
-                        <span className="item-price">${Math.round(item.price)}</span>
+                  {menu.find(category => category.categoryid === categoryId)?.items
+                    .filter(item => !item.ishidden)
+                    .map(item => (
+                      <div key={item.productid} className="item" onClick={() => handleItemClick(item)}>
+                        <span className="item-name">{item.productname}</span>
+                        <div className="item-details">
+                          {item.remainingstock !== null && (
+                            <span className="item-stock">stock:{item.remainingstock}</span>
+                          )} 
+                          <span className="item-price">${Math.round(item.price)}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             ))}
