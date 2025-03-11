@@ -153,15 +153,17 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
               </select>
             </div>
             <div className="order-type">
-              <label>
-                <input
-                  type="radio"
-                  value="Dine-in"
-                  checked={orderType === 'Dine-in'}
-                  onChange={(e) => setOrderType(e.target.value)}
-                />
-                Dine-in
-              </label>
+              {party && (
+                <label>
+                  <input
+                    type="radio"
+                    value="Dine-in"
+                    checked={orderType === 'Dine-in'}
+                    onChange={(e) => setOrderType(e.target.value)}
+                  />
+                  Dine-in
+                </label>
+              )}
               <label>
                 <input
                   type="radio"
