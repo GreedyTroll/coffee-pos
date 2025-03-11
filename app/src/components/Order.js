@@ -52,7 +52,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
         JSON.stringify(selectedAddons.map(a => a.addonid).sort())
       );
       const currentQuantity = existingItemIndex !== -1 ? prevOrder[existingItemIndex].quantity : 0;
-      if (currentQuantity + 1 > product.remainingstock) {
+      if (product.remainingstock !== null && currentQuantity + 1 > product.remainingstock) {
         alert('Cannot add more items than available in stock.');
         return prevOrder;
       }
@@ -99,7 +99,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     setOrder(prevOrder => {
       const updatedOrder = [...prevOrder];
       const product = menu.flatMap(category => category.items).find(item => item.productid === updatedOrder[index].product_id);
-      if (updatedOrder[index].quantity + 1 > product.remainingstock) {
+      if (product.remainingstock !== null && updatedOrder[index].quantity + 1 > product.remainingstock) {
         alert('Cannot add more items than available in stock.');
         return prevOrder;
       }
