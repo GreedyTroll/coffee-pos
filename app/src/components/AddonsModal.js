@@ -51,7 +51,6 @@ const AddonsModal = ({ show, onClose, product, onConfirm }) => {
     acc[group].push(addon);
     return acc;
   }, {});
-  console.log(groupedAddons);
 
   return (
     <div className="addons-modal-overlay">
