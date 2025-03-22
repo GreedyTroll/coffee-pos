@@ -39,6 +39,7 @@ Order summary
 .order-summary .item-name {
   width: 60%;
   flex-grow: 1; /* Let the item name take remaining space */
+  font-weight: bold; /* Make the item name bold */
 }
 
 .order-summary .item-quantity {
@@ -164,6 +165,7 @@ Order contents
   align-self: flex-start; /* Align item name to the left */
   font-size: 1.2em; /* Adjust font size if necessary */
   color: #333; /* Adjust color if necessary */
+  font-weight: bold; /* Make the item name bold */
 }
 
 .item .item-details {

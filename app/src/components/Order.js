@@ -135,7 +135,9 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
     }, 0);
   };
 
-  const categories = menu.map(category => category.categoryid);
+  const categories = menu.filter(category => 
+    category.items.some(item => !item.ishidden)
+  ).map(category => category.categoryid);
 
   return (
     <>
