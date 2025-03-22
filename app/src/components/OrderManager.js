@@ -7,7 +7,6 @@ const apiUrl = process.env.REACT_APP_API_URL;
 function OrderManager({ partyId, orderId }) {
   const [orders, setOrders] = useState([]);
   const [party, setParty] = useState(null);
-  const [singleOrderId, setSingleOrderId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -20,7 +19,6 @@ function OrderManager({ partyId, orderId }) {
     const fetchOrders = async () => {
       try {
         const response = await axios.get(`${apiUrl}/orders?party_id=${partyId}`);
-        console.log('Orders:', response.data);
         setOrders(response.data);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
@@ -30,7 +28,6 @@ function OrderManager({ partyId, orderId }) {
     const fetchOrderById = async () => {
       try {
         const response = await axios.get(`${apiUrl}/orders/${orderId}`);
-        console.log('Order:', response.data);
         setOrders([response.data]);
       } catch (error) {
         console.error('Failed to fetch order:', error);
