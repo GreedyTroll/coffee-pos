@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AddonsModal.css';
 
 const AddonsModal = ({ show, onClose, product, onConfirm }) => {
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (product) {
+      const defaultSelected = Object.values(groupedAddons)
+        .filter(addons => addons[0].groupname !== null)
+        .map(addons => addons[addons.length - 1]);
+      setSelectedAddons(defaultSelected);
+    }
+  }, [product]);
 
   if (!show || !product) return null;
 
