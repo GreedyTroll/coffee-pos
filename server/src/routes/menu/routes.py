@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from common.models import db, Item, Category, Tag, ItemTag, Addon, AvailableAddon
+from common.models import db, Item, Category, Tag, ItemTag, Addon, AvailableAddon, AddonGroup
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from common.models import model_to_dict
@@ -17,10 +17,13 @@ def menu():
     item_tags = db.session.query(ItemTag).all()
     tags = db.session.query(Tag).all()
     available_addons = db.session.query(AvailableAddon).all()
-    addons = db.session.query(Addon).all()
-
+    addons = db.session.query(Addon, AddonGroup.groupname).outerjoin(AddonGroup, Addon.addongroup == AddonGroup.groupid).all()
+    addon_dict = {}
+    for addon, groupname in addons:
+        addon_data = model_to_dict(addon)
+        addon_data['groupname'] = groupname
+        addon_dict[addon.addonid] = addon_data
     tag_dict = {tag.tagid: model_to_dict(tag) for tag in tags}
-    addon_dict = {addon.addonid: model_to_dict(addon) for addon in addons}
 
     item_tag_map = {}
     for item_tag in item_tags:
@@ -358,8 +361,56 @@ def deleteTag(id):
 ###########
 @menu_bp.route('/addons', methods=['GET'])
 def addons():
-    addons = Addon.query.all()
-    return jsonify([model_to_dict(addon) for addon in addons])
+    addons = db.session.query(Addon).outerjoin(AddonGroup, Addon.addongroup == AddonGroup.groupid).all()
+    result = []
+    for addon in addons:
+        addon_dict = model_to_dict(addon)
+        addon_group = AddonGroup.query.get(addon.addongroup)
+        addon_dict['groupname'] = addon_group.groupname if addon_group else None
+        addon_dict['groupid'] = addon_group.groupid if addon_group else None
+        result.append(addon_dict)
+    return jsonify(result)
+
+@menu_bp.route('/addonGroups', methods=['GET'])
+def addonGroups():
+    addon_groups = AddonGroup.query.all()
+    return jsonify([model_to_dict(addon_group) for addon_group in addon_groups])
+
+@menu_bp.route('/addAddonGroup', methods=['POST'])
+@token_required
+def addAddonGroup():
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+    try:
+        addon_group = AddonGroup(
+            groupname=data['group_name']
+        )
+        db.session.add(addon_group)
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f'{e}')
+        return {'Error': f'{e}'}, 500
+    return {'groupid': addon_group.groupid, 'success': True}, 200
+
+@menu_bp.route('/addonGroup/<int:id>', methods=['DELETE'])
+@token_required
+def deleteAddonGroup(id):
+    if not id:
+        return {'error': 'no id provided'}, 400
+    try:
+        addon_group = AddonGroup.query.get(id)
+        if not addon_group:
+            return {'error': "addon group id not found"}, 400
+        db.session.delete(addon_group)
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f'{e}')
+        return {'Error': f'{e}'}, 500
+    return {'success': True}, 200
 
 @menu_bp.route('/addAddon', methods=['POST'])
 @token_required
@@ -374,7 +425,14 @@ def addAddon():
         return {"message": 'no data received'}, 400
     
     try:
+        if 'addon_group' in data:
+            addon_group = AddonGroup.query.get(data['addon_group'])
+            if not addon_group:
+                return {'error': 'addon group not found'}, 400
+        else:
+            addon_group = None
         addon = Addon(
+            addongroup=addon_group.groupid if addon_group else None,
             addonname=data['addon_name'],
             price=float(data['price'])
         )

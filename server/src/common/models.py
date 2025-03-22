@@ -69,12 +69,18 @@ class ItemTag(db.Model):
         PrimaryKeyConstraint('itemid', 'tagid'),
     )
 
+class AddonGroup(db.Model):
+    __tablename__ = 'addongroups'
+    groupid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    groupname = db.Column(db.String(100))
+    createdat = db.Column(db.DateTime, default=func.now())
+
 class Addon(db.Model):
     __tablename__ = 'addons'
+    addongroup = db.Column(db.Integer, db.ForeignKey('addongroups.groupid', ondelete='CASCADE'))
     addonid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     addonname = db.Column(db.String(100))
     price = db.Column(db.Numeric(10, 2))
-    category = db.Column(db.String(20))
     createdat = db.Column(db.DateTime, default=func.now())
 
 class AvailableAddon(db.Model):
