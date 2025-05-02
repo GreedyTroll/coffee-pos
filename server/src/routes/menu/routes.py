@@ -365,7 +365,7 @@ def addons():
     result = []
     for addon in addons:
         addon_dict = model_to_dict(addon)
-        addon_group = AddonGroup.query.get(addon.addongroup)
+        addon_group = AddonGroup.query.get(addon.addongroup) if addon.addongroup else None
         addon_dict['groupname'] = addon_group.groupname if addon_group else None
         addon_dict['groupid'] = addon_group.groupid if addon_group else None
         result.append(addon_dict)
@@ -423,10 +423,9 @@ def addAddon():
     # Check if data is received
     if data is None:
         return {"message": 'no data received'}, 400
-    
     try:
         if 'addon_group' in data:
-            addon_group = AddonGroup.query.get(data['addon_group'])
+            addon_group = AddonGroup.query.get(int(data.get('addon_group')))
             if not addon_group:
                 return {'error': 'addon group not found'}, 400
         else:
@@ -483,6 +482,42 @@ def linkAddon():
             for addon_id in addons_to_add:
                 db.session.add(AvailableAddon(itemid=product_id, addonid=addon_id))
         
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f'{e}')
+        return {'Error': f'{e}'}, 500
+    
+    return {'success': True}, 200
+
+@menu_bp.route('/updateAddonGroup', methods=['PUT'])
+@token_required
+def updateAddonGroup():
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+    
+    # Check if data is received
+    if data is None:
+        return {"message": 'no data received'}, 400
+
+    addon_id = data.get('addon_id')
+    if not addon_id:
+        return {'error': 'no addon id provided'}, 400
+    group_id = data.get('group_id')
+    if not group_id:
+        return {'error': 'no group id provided'}, 400
+    
+    addon = Addon.query.get(addon_id)
+    if not addon:
+        return {'error': "addon id not found"}, 400
+    addon_group = AddonGroup.query.get(group_id)
+    if not addon_group:
+        return {'error': "addon group id not found"}, 400
+    
+    try:
+        addon.addongroup = addon_group.groupid
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
