@@ -105,6 +105,7 @@ class Order(db.Model):
     paymentmethod = db.Column(db.String(20), db.ForeignKey('paymentmethods.methodname'))
     paidtime = db.Column(db.DateTime)
     ordertype = db.Column(db.String(20))
+    prepared = db.Column(db.Boolean, default=False)
     notes = db.Column(db.Text)
 
 class OrderItem(db.Model):
@@ -129,5 +130,5 @@ class OrderDetail(db.Model):
     paidtime = db.Column(db.DateTime)
     ordertype = db.Column(db.String(20))
     items = db.Column(db.JSON)
-    preparing = db.Column(db.Boolean)
+    prepared = db.Column(db.Boolean)
     party = db.relationship('Party', backref='orderdetails')  # Add relationship to Party

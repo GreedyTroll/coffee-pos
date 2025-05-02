@@ -99,6 +99,7 @@ CREATE TABLE Orders (
     PaymentMethod VARCHAR(20),
     PaidTime TIMESTAMP,
     OrderType VARCHAR(20),
+    Prepared Boolean DEFAULT FALSE,
     Notes TEXT,
     FOREIGN KEY (PartyID) REFERENCES Parties(PartyID),
     FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID),
@@ -130,6 +131,7 @@ SELECT
     o.PaymentMethod,
     o.PaidTime,
     o.OrderType,
+    o.Prepared,
     JSON_AGG(
         JSON_BUILD_OBJECT(
             'OrderItemID', oi.OrderItemID,
@@ -139,8 +141,7 @@ SELECT
             'Quantity', oi.Quantity,
             'Delivered', oi.Delivered
         )
-    ) AS Items,
-    BOOL_OR(NOT oi.Delivered) AS Preparing
+    ) AS Items
 FROM 
     Orders o
 JOIN 

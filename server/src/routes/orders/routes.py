@@ -42,9 +42,9 @@ def orders():
         query = query.filter(OrderDetail.orderdate <= datetime.strptime(date_end, '%Y-%m-%d'))
     if fulfilled is not None:
         if fulfilled.lower() == 'false':
-            query = query.filter(OrderDetail.preparing == True)
+            query = query.filter(OrderDetail.prepared == False)
         elif fulfilled.lower() == 'true':
-            query = query.filter(OrderDetail.preparing == False)
+            query = query.filter(OrderDetail.prepared == True)
     if party: # all orders for a specific party
         query = query.filter(OrderDetail.partyid == int(party))
     elif active is not None and active.lower() == 'false': # all parties that has left
@@ -178,6 +178,26 @@ def partyCheckout(party_id):
             if not order.paidtime:
                 order.paymentmethod = payment_method
                 order.paidtime = datetime.now(tz=timezone(timedelta(hours=8)))
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f'{e}')
+        return {'Error': f'{e}'}, 500
+
+    return {'success': True}, 200
+
+@orders_bp.route('/complete/<int:id>', methods=['PUT'])
+@token_required
+def completeOrder(id):
+    if not id:
+        return {'error': 'no order id provided'}, 400
+    
+    order = Order.query.get(id)
+    if not order:
+        return {'error': "Order id not found"}, 404
+
+    try:
+        order.prepared = not order.prepared
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
