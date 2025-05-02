@@ -505,19 +505,23 @@ def updateAddonGroup():
     addon_id = data.get('addon_id')
     if not addon_id:
         return {'error': 'no addon id provided'}, 400
-    group_id = data.get('group_id')
-    if not group_id:
-        return {'error': 'no group id provided'}, 400
-    
     addon = Addon.query.get(addon_id)
     if not addon:
         return {'error': "addon id not found"}, 400
-    addon_group = AddonGroup.query.get(group_id)
-    if not addon_group:
-        return {'error': "addon group id not found"}, 400
+
+    group_id = data.get('group_id')
+    if not group_id:
+        group_id = None
+
+    if group_id == None:
+        addon_group = None 
+    else:
+        addon_group = AddonGroup.query.get(group_id)
+        if not addon_group:
+            return {'error': "addon group id not found"}, 400
     
     try:
-        addon.addongroup = addon_group.groupid
+        addon.addongroup = group_id
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()

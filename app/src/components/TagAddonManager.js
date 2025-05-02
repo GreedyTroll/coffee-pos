@@ -103,7 +103,7 @@ const TagAddonManager = ({ closePopup }) => {
     const handleUpdateAddonGroup = (addonId, groupId) => {
         axios.put(`${apiUrl}/menu/updateAddonGroup`, {
             addon_id: addonId,
-            group_id: groupId
+            group_id: (groupId) ? groupId : null
         })
             .then(() => {
                 axios.get(`${apiUrl}/menu/addons`).then(res => setAddons(res.data));
