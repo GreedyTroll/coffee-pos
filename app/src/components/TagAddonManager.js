@@ -132,14 +132,6 @@ const TagAddonManager = ({ closePopup }) => {
                                 </div>
                             ))}
                         </div>
-                        <div className="new-item-row">
-                            <input
-                                value={newTagName}
-                                onChange={e => setNewTagName(e.target.value)}
-                                placeholder="New tag name"
-                            />
-                            <button onClick={handleAddTag}>Add Tag</button>
-                        </div>
                     </div>
                     <div className="addons-manage-section">
                         <h3>Addons</h3>
@@ -165,31 +157,6 @@ const TagAddonManager = ({ closePopup }) => {
                                 </div>
                             ))}
                         </div>
-                        <div className="new-item-row">
-                            <input
-                                value={newAddonName}
-                                onChange={e => setNewAddonName(e.target.value)}
-                                placeholder="New addon name"
-                            />
-                            <input
-                                type="number"
-                                value={newAddonPrice}
-                                onChange={e => setNewAddonPrice(e.target.value)}
-                                placeholder="Addon price"
-                            />
-                            <select
-                                value={selectedAddonGroup}
-                                onChange={e => setSelectedAddonGroup(e.target.value)}
-                            >
-                                <option value="">Select group</option>
-                                {addonGroups.map(group => (
-                                    <option key={group.groupid} value={group.groupid}>
-                                        {group.groupname}
-                                    </option>
-                                ))}
-                            </select>
-                            <button onClick={handleAddAddon}>Add Addon</button>
-                        </div>
                     </div>
                     <div className="addon-groups-manage-section">
                         <h3>Addon Groups</h3>
@@ -200,15 +167,50 @@ const TagAddonManager = ({ closePopup }) => {
                                     <FaTrash className="trashicon" onClick={() => handleDeleteAddonGroup(group.groupid)} />
                                 </div>
                             ))}
-                            <div className="new-item-row">
-                                <input
-                                    value={newAddonGroupName}
-                                    onChange={e => setNewAddonGroupName(e.target.value)}
-                                    placeholder="New Addon Group name"
-                                />
-                                <button onClick={handleAddAddonGroup}>Add Group</button>
-                            </div>
                         </div>
+                    </div>
+                </div>
+                <div className="new-items-container">
+                    <div className="new-item-row">
+                        <input
+                            value={newTagName}
+                            onChange={e => setNewTagName(e.target.value)}
+                            placeholder="New tag name"
+                        />
+                        <button onClick={handleAddTag}>Add Tag</button>
+                    </div>
+                    <div className="new-item-row">
+                        <input
+                            value={newAddonName}
+                            onChange={e => setNewAddonName(e.target.value)}
+                            placeholder="New addon name"
+                        />
+                        <input
+                            type="number"
+                            value={newAddonPrice}
+                            onChange={e => setNewAddonPrice(e.target.value)}
+                            placeholder="Addon price"
+                        />
+                        <select
+                            value={selectedAddonGroup}
+                            onChange={e => setSelectedAddonGroup(e.target.value)}
+                        >
+                            <option value="">Select group</option>
+                            {addonGroups.map(group => (
+                                <option key={group.groupid} value={group.groupid}>
+                                    {group.groupname}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={handleAddAddon}>Add Addon</button>
+                    </div>
+                    <div className="new-item-row">
+                        <input
+                            value={newAddonGroupName}
+                            onChange={e => setNewAddonGroupName(e.target.value)}
+                            placeholder="New Addon Group name"
+                        />
+                        <button onClick={handleAddAddonGroup}>Add Group</button>
                     </div>
                 </div>
             </div>

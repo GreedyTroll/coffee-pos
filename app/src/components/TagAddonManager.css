@@ -3,7 +3,7 @@
     to { opacity: 1; }
 }
 
-.popup {
+.tag-addon-popup {
     position: fixed;
     top: 0;
     left: 0;
@@ -21,7 +21,7 @@
     padding: 20px;
     border-radius: 10px;
     width: 80%;
-    max-width: 600px;
+    max-width: 800px;
     max-height: 80%;
     overflow-y: auto;
     position: relative;
@@ -40,50 +40,79 @@
     border-radius: 6px;
 }
 
-.tags-section, .addons-section {
-    margin-top: 20px;
+.section-row {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    justify-content: space-evenly;
+    padding-bottom: 20px;
+    height: 380px;
 }
 
-.tags-section h3, .addons-section h3 {
-    margin: 0 0; /* Reduced margin */
+.tags-manage-section,
+.addons-manage-section,
+.addon-groups-manage-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.tags-manage-section h3, 
+.addons-manage-section h3, 
+.addon-groups-manage-section h3 {
+    margin: 10px 0;
 }
 
 .tagaddon-tags-container,
-.tagaddon-addons-container {
+.tagaddon-addons-container,
+.tagaddon-addon-groups-container {
     display: flex;
     flex-direction: column;
-    max-height: 300px;
+    max-height: 320px;
     overflow-y: auto;
     gap: 10px;
 }
 
+.new-items-container {
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    gap: 20px;
+}
+
 .new-item-row {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     margin-top: 10px;
+    width: calc(100% / 3); /* Distribute the width evenly */
 }
+
+.new-item-row > * {
+    margin: 5px 0;
+}
+
 .new-item-row input {
-    margin-right: 10px;
+    margin-right: 0;
     padding: 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
+
+.new-item-row select,
+.tagaddon-addon-item select {
+    margin-right: 0;
+    margin-left: 10px;
+    padding: 0px;
+    width: 80%;
+    box-sizing: border-box;
+}
+
 .new-item-row button {
     padding: 5px 10px;
-}
-
-.section-row {
-    display: flex;
-    gap: 20px;
-    justify-content: space-evenly;
-}
-
-.tag-item, .addon-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.tag-item span, .addon-item span {
-    color: #000;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .trashicon {
@@ -91,14 +120,48 @@
 }
 
 .tagaddon-tag-item,
-.tagaddon-addon-item {
+.tagaddon-addon-item,
+.tagaddon-addon-group-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-right: 20px;
+    padding-right: 10px;
 }
 
 .tagaddon-tag-item span,
+.tagaddon-addon-item span,
+.tagaddon-addon-group-item span {
+    color: #000;
+}
+
+.tagaddon-addon-item {
+    display: flex;
+    align-items: center; /* Align items horizontally */
+    padding-right: 10px;
+    position: relative; /* Needed for absolute positioning of the select */
+}
+
 .tagaddon-addon-item span {
     color: #000;
+    flex-grow: 1; /* Let the span take up remaining space */
+    text-align: left; /* Align text to the left */
+}
+
+.tagaddon-addon-item select {
+    position: absolute; /* Position the select box */
+    right: 30px; /* Distance from the right edge */
+    top: 50%; /* Vertically center the select box */
+    transform: translateY(-50%); /* Adjust for true vertical centering */
+    margin: 0; /* Reset any margins */
+    padding: 5px;
+    width: auto; /* Adjust width to content */
+    box-sizing: border-box;
+}
+
+.tagaddon-addon-item .trashicon {
+    margin-left: 10px;
+}
+
+.tagaddon-addon-item .trashicon {
+    margin-left: 0px;
 }
