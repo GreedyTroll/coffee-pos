@@ -147,13 +147,26 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
     };
 
     const addDeleteItem = (id) => {
+        setLocalCategory(prev => {
+            const updatedItems = prev.items.map(item => {
+                if (item.productid === id) {
+                    if (deletedItems.includes(id)) {
+                        return { ...item, deleted: false };
+                    } else {
+                        return { ...item, deleted: true };
+                    }
+                }
+                return item;
+            });
+            return { ...prev, items: updatedItems };
+        });
         if (id < 0) {
-            setAddedItems(prev => prev.filter(item => item.productid !== id));
+            setAddedItems(prev => prev.filter(item => item.productid !== id))
         }
         else {
             setDeletedItems((prev) => {
                 const found = prev.find((p) => p === id);
-                return found ? prev : [...prev, id];
+                return found ? prev.filter((p) => p !== id) : [...prev, id];
             });
         }
     };

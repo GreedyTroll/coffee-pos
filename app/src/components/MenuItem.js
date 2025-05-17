@@ -62,7 +62,7 @@ const MenuItem = ({ itemDeets, updateItem, addontagLink, editMode, addDeleteItem
         return (<></>);
     }
     return (
-        <div className="menu-row">
+        <div className={`menu-row${item.deleted ? ' deleted' : ''}`}>
             {item.productid < 0 && (
                 <>
                 <input
