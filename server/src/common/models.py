@@ -83,12 +83,20 @@ class Addon(db.Model):
     price = db.Column(db.Numeric(10, 2))
     createdat = db.Column(db.DateTime, default=func.now())
 
-class AvailableAddon(db.Model):
-    __tablename__ = 'availableaddons'
+class LinkAddon(db.Model):
+    __tablename__ = 'linkaddons'
     itemid = db.Column(db.Integer, db.ForeignKey('items.productid'))
     addonid = db.Column(db.Integer, db.ForeignKey('addons.addonid'))
     __table_args__ = (
         PrimaryKeyConstraint('itemid', 'addonid'),
+    )
+
+class LinkAddonGroup(db.Model):
+    __tablename__ = 'linkaddongroups'
+    itemid = db.Column(db.Integer, db.ForeignKey('items.productid'))
+    groupid = db.Column(db.Integer, db.ForeignKey('addongroups.groupid'))
+    __table_args__ = (
+        PrimaryKeyConstraint('itemid', 'groupid'),
     )
 
 class PaymentMethod(db.Model):
