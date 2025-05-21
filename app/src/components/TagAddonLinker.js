@@ -13,7 +13,6 @@ const TagAddonLinker = ({ allTags, allAddons, allAddonGroups, item, closePopup, 
     const [unlinkedAddonGroups, setUnlinkedAddonGroups] = useState([]);
 
     useEffect(() => {
-        console.log(item);
     }, []);
     
     useEffect(() => {
