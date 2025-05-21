@@ -6,7 +6,7 @@ import AddonsModal from './AddonsModal';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const OrderComponent = ({ partyId, onOrderSent }) => {
+const OrderComponent = ({ partyId, addons, onOrderSent }) => {
   const [menu, setMenu] = useState([]);
   const [party, setParty] = useState(null);
   const [order, setOrder] = useState([]);
@@ -146,6 +146,7 @@ const OrderComponent = ({ partyId, onOrderSent }) => {
           show={showAddonsModal}
           onClose={() => setShowAddonsModal(false)}
           product={selectedProduct}
+          addons={addons}
           onConfirm={handleConfirmAddons}
         />
       )}

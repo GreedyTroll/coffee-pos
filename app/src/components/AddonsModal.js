@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import './AddonsModal.css';
 
-const AddonsModal = ({ show, onClose, product, onConfirm }) => {
+const AddonsModal = ({ show, onClose, product, onConfirm, addons }) => {
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [groupedAddons, setGroupedAddons] = useState({});
+
+  useEffect(() => {
+    let newGroupedAddons = {};
+    if (product && addons) {
+      if (product.addongroups && Array.isArray(product.addongroups)) {
+        product.addongroups.forEach(group => {
+          if (addons[group.groupname]) {
+            newGroupedAddons[group.groupname] = addons[group.groupname];
+          }
+        });
+      }
+      if (product.addons && Array.isArray(product.addons) && product.addons.length > 0) {
+        newGroupedAddons['null'] = product.addons;
+      }
+    }
+    setGroupedAddons(newGroupedAddons);
+  }, [product, addons]);
 
   useEffect(() => {
     if (product) {
@@ -12,7 +30,7 @@ const AddonsModal = ({ show, onClose, product, onConfirm }) => {
         .map(addons => addons[addons.length - 1]);
       setSelectedAddons(defaultSelected);
     }
-  }, [product]);
+  }, [product, groupedAddons]);
 
   if (!show || !product) return null;
 
@@ -51,15 +69,6 @@ const AddonsModal = ({ show, onClose, product, onConfirm }) => {
     if(price == 0) return '';
     return price < 0 ? `-$${-price}` : `+$${price}`;
   }
-
-  const groupedAddons = product.addons.reduce((acc, addon) => {
-    const group = addon.groupname;
-    if (!acc[group]) {
-      acc[group] = [];
-    }
-    acc[group].push(addon);
-    return acc;
-  }, {});
 
   return (
     <div className="addons-modal-overlay">
