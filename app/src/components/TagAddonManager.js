@@ -18,19 +18,19 @@ const TagAddonManager = ({ closePopup }) => {
     const axios = useAxios();
 
     useEffect(() => {
-        axios.get(`${apiUrl}/menu/tags`)
+        axios.get(`${apiUrl}/tags`)
             .then(response => {
                 setTags(response.data);
             })
             .catch(error => console.error('Error fetching tags:', error));
 
-        axios.get(`${apiUrl}/menu/addons`)
+        axios.get(`${apiUrl}/addons`)
             .then(response => {
                 setAddons(response.data);
             })
             .catch(error => console.error('Error fetching addons:', error));
         
-        axios.get(`${apiUrl}/menu/addonGroups`)
+        axios.get(`${apiUrl}/addons/addonGroups`)
             .then(response => {
                 setAddonGroups(response.data);
             })
@@ -45,17 +45,17 @@ const TagAddonManager = ({ closePopup }) => {
 
     const handleAddTag = () => {
         if (!newTagName.trim()) return;
-        axios.post(`${apiUrl}/menu/addTag`, { tag_name: newTagName })
+        axios.post(`${apiUrl}/tags/addTag`, { tag_name: newTagName })
             .then(() => {
                 setNewTagName('');
-                axios.get(`${apiUrl}/menu/tags`).then(res => setTags(res.data));
+                axios.get(`${apiUrl}/tags`).then(res => setTags(res.data));
             })
             .catch(error => console.error('Error adding tag:', error));
     };
 
     const handleAddAddon = () => {
         if (!newAddonName.trim()) return;
-        axios.post(`${apiUrl}/menu/addAddon`, {
+        axios.post(`${apiUrl}/addons/addAddon`, {
             addon_name: newAddonName,
             price: parseFloat(newAddonPrice) || 0,
             addon_group: selectedAddonGroup
@@ -64,13 +64,13 @@ const TagAddonManager = ({ closePopup }) => {
                 setNewAddonName('');
                 setNewAddonPrice('');
                 setSelectedAddonGroup('');
-                axios.get(`${apiUrl}/menu/addons`).then(res => setAddons(res.data));
+                axios.get(`${apiUrl}/addons`).then(res => setAddons(res.data));
             })
             .catch(error => console.error('Error adding addon:', error));
     };
 
     const handleAddAddonGroup = () => {
-        axios.post(`${apiUrl}/menu/addAddonGroup`, { group_name: newAddonGroupName })
+        axios.post(`${apiUrl}/addons/addAddonGroup`, { group_name: newAddonGroupName })
             .then(() => {
                 setNewAddonGroupName('');
                 axios.get(`${apiUrl}/menu/addonGroups`).then(res => setAddonGroups(res.data));
@@ -79,19 +79,19 @@ const TagAddonManager = ({ closePopup }) => {
     };
 
     const handleDeleteTag = (tagId) => {
-        axios.delete(`${apiUrl}/menu/tags/${tagId}`)
+        axios.delete(`${apiUrl}/tags/${tagId}`)
             .then(() => setTags(tags.filter(t => t.tagid !== tagId)))
             .catch(error => console.error('Error deleting tag:', error));
     };
 
     const handleDeleteAddon = (addonId) => {
-        axios.delete(`${apiUrl}/menu/addons/${addonId}`)
+        axios.delete(`${apiUrl}/addons/${addonId}`)
             .then(() => setAddons(addons.filter(a => a.addonid !== addonId)))
             .catch(error => console.error('Error deleting addon:', error));
     };
 
     const handleDeleteAddonGroup = (groupId) => {
-        axios.delete(`${apiUrl}/menu/addonGroup/${groupId}`)
+        axios.delete(`${apiUrl}/addons/addonGroup/${groupId}`)
             .then(() => {
                 setAddonGroups(addonGroups.filter(group => group.groupid !== groupId));
                 console.log('addons', addons);
@@ -101,12 +101,12 @@ const TagAddonManager = ({ closePopup }) => {
     };
 
     const handleUpdateAddonGroup = (addonId, groupId) => {
-        axios.put(`${apiUrl}/menu/updateAddonGroup`, {
+        axios.put(`${apiUrl}/addons/updateAddonGroup`, {
             addon_id: addonId,
             group_id: (groupId) ? groupId : null
         })
             .then(() => {
-                axios.get(`${apiUrl}/menu/addons`).then(res => setAddons(res.data));
+                axios.get(`${apiUrl}/addons`).then(res => setAddons(res.data));
             })
             .catch(error => console.error('Error updating addon group:', error));
     };
