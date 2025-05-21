@@ -18,23 +18,24 @@ def menu():
     tags = db.session.query(Tag).all()
     available_addons = db.session.query(LinkAddon).all()
     addons = db.session.query(Addon, AddonGroup.groupname).outerjoin(AddonGroup, Addon.addongroup == AddonGroup.groupid).all()
-    link_groups = db.session.query(LinkAddonGroup).all()
+    link_groups = db.session.query(LinkAddonGroup).all() # all the groups that are linked to items
+    addon_group_dict = {group.groupid: model_to_dict(group) for group in db.session.query(AddonGroup).all()}
 
     addon_dict = {}
     for addon, groupname in addons:
         addon_data = model_to_dict(addon)
-        addon_data['groupname'] = groupname
+        addon_data['groupname'] = groupname # add groupname to addon
         addon_dict[addon.addonid] = addon_data
 
     tag_dict = {tag.tagid: model_to_dict(tag) for tag in tags}
 
-    item_tag_map = {}
+    item_tag_map = {} # itemid -> [tag1, tag2, ...]
     for item_tag in item_tags:
         if item_tag.itemid not in item_tag_map:
             item_tag_map[item_tag.itemid] = []
         item_tag_map[item_tag.itemid].append(tag_dict[item_tag.tagid])
 
-    item_addon_map = {}
+    item_addon_map = {} # itemid -> [addon1, addon2, ...]
     for available_addon in available_addons:
         if available_addon.itemid not in item_addon_map:
             item_addon_map[available_addon.itemid] = []
@@ -44,7 +45,7 @@ def menu():
     for link_group in link_groups:
         if link_group.itemid not in item_addongroup_map:
             item_addongroup_map[link_group.itemid] = []
-        item_addongroup_map[link_group.itemid].append(link_group.groupid)
+        item_addongroup_map[link_group.itemid].append(addon_group_dict[link_group.groupid])
     menu = []
     for category in categories:
         category_dict = model_to_dict(category)

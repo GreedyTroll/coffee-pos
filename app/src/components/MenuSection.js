@@ -6,7 +6,7 @@ import TagAddonLinker from './TagAddonLinker';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) => {
+const MenuSection = ({ category, isAuthenticated, updateCategory, tags, addons, addonGroups }) => {
     const [originalCategory, setOriginalCategory] = useState(category);
     const [localCategory, setLocalCategory] = useState(category);
     const [updatedItems, setUpdatedItems] = useState([]);
@@ -23,13 +23,9 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
         ishidden: false,
         menuorder: 0,
     });
-/*
-    const [tags, setTags] = useState([]);
-    const [addons, setAddons] = useState([]);
-    const [newTags, setNewTags] = useState({});
-    const [newAddons, setNewAddons] = useState({});
-    const [newAddonGroups, setNewAddonGroups] = useState({});
-*/
+
+    const [attrChange, setAttrChange] = useState({});
+
     const axios = useAxios();
 
     useEffect(() => {
@@ -37,12 +33,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
         setOriginalCategory(category);
         setPlaceHolderItem({...placeHolderItem, categoryid: category.categoryid})
     }, [category]);
-/*
-    useEffect(() => {
-        axios.get(`${apiUrl}/tags`).then(response => setTags(response.data));
-        axios.get(`${apiUrl}/addons`).then(response => setAddons(response.data));
-    }, []);
-*/
+
     const toggleEditMode = () => {
         setIsEditMode(!isEditMode);
     }
@@ -78,50 +69,41 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
             });
         }
     };
-/*
-    const handleTagChange = (productid, e) => {
-        const { name, value } = e.target;
-        setNewTags(prev => ({
-            ...prev,
-            [productid]: {
-                ...(prev[productid] || {}),
-                [name]: value
-            }
-        }));
-    };
 
-    const handleAddonChange = (productid, e) => {
+    const handleAttrChange = (productid, e) => {
         const { name, value } = e.target;
-        setNewAddons(prev => ({
+        setAttrChange(prev => ({
             ...prev,
             [productid]: {
                 ...(prev[productid] || {}),
                 [name]: value
             }
         }));
-    };
-
-    const handleAddonGroupChange = (productid, e) => {
-        const { name, value } = e.target;
-        setNewAddonGroups(prev => ({
-            ...prev,
-            [productid]: {
-                ...(prev[productid] || {}),
-                [name]: value
+        // updated items
+        setUpdatedItems(prev => {
+            const found = prev.find(item => item.productid === productid);
+            if (found) {
+                return prev.map(item => item.productid === productid ? { ...item, [name]: value } : item);
+            } else {
+                return [...prev, { productid, [name]: value }];
             }
-        }));
+        });
     };
 
     const saveTagsAndAddons = (productid) => {
-        const tag_ids = newTags[productid]?.tags?.map(tag => tag.tagid) || [];
-        const addon_ids = newAddons[productid]?.addons?.map(addon => addon.addonid) || [];
-        const group_ids = newAddonGroups[productid]?.addongroups?.map(group => group.groupid) || [];
+        const tag_ids = attrChange[productid]?.tags?.map(tag => tag.tagid) || [];
+        const addon_ids = attrChange[productid]?.addons?.map(addon => addon.addonid) || [];
+        const group_ids = attrChange[productid]?.addongroups?.map(group => group.groupid) || [];
 
-        axios.post(`${apiUrl}/tags/linkTag`, { product_id: productid, tag_ids });
-        axios.post(`${apiUrl}/addons/linkAddon`, { product_id: productid, addon_ids });
-        axios.post(`${apiUrl}/addons/linkAddon`, { product_id: productid, group_ids });
+        console.log("groups", group_ids);
+        if (tag_ids.length > 0) 
+            axios.post(`${apiUrl}/tags/linkTag`, { product_id: productid, tag_ids });
+        if (addon_ids.length > 0) 
+            axios.post(`${apiUrl}/addons/linkAddon`, { product_id: productid, addon_ids });
+        if (group_ids.length > 0)
+            axios.post(`${apiUrl}/addons/linkAddon`, { product_id: productid, group_ids });
     };
-*/
+
     const addCategory = () => {
         const newCategory = {
             category_name: localCategory.categoryname,
@@ -220,7 +202,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
         });
     }
     
-    const deleteItem = (id) => {
+    const commitDeleteItem = (id) => {
         axios.delete(`${apiUrl}/menu/item/${id}`)
         .then(() => {
             setLocalCategory(prev => ({
@@ -245,7 +227,7 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
 
         // delete items
         deletedItems.forEach(id => {
-            deleteItem(id);
+            commitDeleteItem(id);
         });
 
         // update items
@@ -257,6 +239,32 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
         addedItems.forEach(item => {
             commitAddItem(item);
         });
+
+        // save tags and addons
+        addedItems.forEach(item => {
+            saveTagsAndAddons(item.productid);
+        });
+        updatedItems.forEach(item => {
+            saveTagsAndAddons(item.productid);
+        });
+
+        // update local category
+        setLocalCategory(prev => ({
+            ...prev,
+            items: prev.items.filter(item => !deletedItems.includes(item.productid))
+                .map(item => {
+                    if (updatedItems.some(i => i.productid === item.productid)) {
+                        return updatedItems.find(i => i.productid === item.productid);
+                    }
+                    return item;
+                })
+                .concat(addedItems.map(item => {
+                    if (addedItems.some(i => i.productid === item.productid)) {
+                        return addedItems.find(i => i.productid === item.productid);
+                    }
+                    return item;
+                }))
+        }));
 
         updateCategory(localCategory, localCategory.categoryid);
 
@@ -376,17 +384,18 @@ const MenuSection = ({ category, isAuthenticated, openPopup, updateCategory }) =
                     />
                 )}
             </div>
-            {/*popupItem && (
+            {popupItem && (
                 <TagAddonLinker
                     allTags={tags}
                     allAddons={addons}
+                    allAddonGroups={addonGroups}
                     item={popupItem}
                     closePopup={() => setPopupItem(null)}
-                    handleTagChange={(e) => handleTagChange(popupItem.productid, e)}
-                    handleAddonChange={(e) => handleAddonChange(popupItem.productid, e)}
-                    handleAddonGroupChange={(e) => handleAddonGroupChange(popupItem.productid, e)}
+                    handleTagChange={(e) => handleAttrChange(popupItem.productid, e)}
+                    handleAddonChange={(e) => handleAttrChange(popupItem.productid, e)}
+                    handleAddonGroupChange={(e) => handleAttrChange(popupItem.productid, e)}
                 />
-            )*/}
+            )}
         </div>
     );
 };

@@ -113,19 +113,23 @@ def linkAddon():
         if not product:
             return {'error': 'product not found'}, 400
         if group_ids := data.get('group_ids'):
-            group_ids = [int(group_id) for group_id in group_ids.split(',')]
+            print(group_ids)
             for group_id in group_ids:
                 addon_group = AddonGroup.query.get(group_id)
                 if not addon_group:
                     return {'error': f'addon group with id {group_id} not found'}, 400 
 
-                existing_link = LinkAddonGroup.query.filter_by(itemid=product_id, groupid=addon_group.groupid).first()
-                if existing_link:
-                    db.session.delete(existing_link)
-                else:
-                    db.session.add(LinkAddonGroup(itemid=product_id, groupid=addon_group.groupid))
+                existing_groups = {linked_group.groupid for linked_group in LinkAddonGroup.query.filter_by(itemid=product_id).all()}
+                new_groups = set(group_ids)
+                groups_to_remove = existing_groups - new_groups
+                groups_to_add = new_groups - existing_groups
+                for group_id in groups_to_remove:
+                    LinkAddonGroup.query.filter_by(itemid=product_id, groupid=group_id).delete()
+                for group_id in groups_to_add:
+                    db.session.add(LinkAddonGroup(itemid=product_id, groupid=group_id))
+
         elif addon_ids := data.get('addon_ids'):
-            addon_ids = [int(addon_id) for addon_id in addon_ids.split(',')]
+            print(addon_ids)
             addons = Addon.query.filter(Addon.addonid.in_(addon_ids)).all()
             for addon in addons:
                 if addon.addongroup is not None:

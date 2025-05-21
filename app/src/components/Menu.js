@@ -9,12 +9,27 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const Menu = ({ isAuthenticated }) => {
     const [menu, setMenu] = useState([]);
     const [popup, setPopup] = useState(false);
+    const [tags, setTags] = useState([]);
+    const [addons, setAddons] = useState([]);
+    const [addonGroups, setAddonGroups] = useState([]);
 
     const axios = useAxios();
 
     const processMenuData = (data) => {
         return data;
     };
+
+    useEffect(() => {
+        axios.get(`${apiUrl}/tags`).then(response => {
+           setTags(response.data);
+        });
+        axios.get(`${apiUrl}/addons`).then(response => {
+            setAddons(response.data);
+        });
+        axios.get(`${apiUrl}/addons/addonGroups`).then(response => {
+            setAddonGroups(response.data);
+        });
+    }, []);
 
     useEffect(() => {
         axios.get(`${apiUrl}/menu`)
@@ -72,6 +87,9 @@ const Menu = ({ isAuthenticated }) => {
                     category={category}
                     isAuthenticated={isAuthenticated}
                     updateCategory={updateCategory}
+                    tags={tags}
+                    addons={addons}
+                    addonGroups={addonGroups}
                 />
             ))}
             {<MenuSection
