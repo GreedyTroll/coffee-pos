@@ -33,6 +33,7 @@ const PartyManager = () => {
   const [seatUpdate, setSeatUpdate] = useState({party: null, seats: []});
   const [isOrderManagerVisible, setIsOrderManagerVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [addons, setAddons] = useState({});
   
   const axios = useAxios();
 
@@ -40,6 +41,7 @@ const PartyManager = () => {
   useEffect(() => {
     fetchParties();
     fetchPartyOrders();
+    fetchAddons();
   }, []);
 
   // order sent
@@ -72,6 +74,25 @@ const PartyManager = () => {
       }, {});
     } catch (error) {
       console.error('Error fetching party orders', error);
+    }
+  };
+
+  const fetchAddons = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/addons`);
+      const groupedAddons = response.data.reduce((acc, addon) => {
+        const group = addon.groupname;
+        if (!group) return acc;
+        if (!acc[group]) {
+          acc[group] = [];
+        }
+        acc[group].push(addon);
+        return acc;
+      }, {});
+      setAddons(groupedAddons);
+      console.log('Fetched addons:', groupedAddons);
+    } catch (error) {
+      console.error('Error fetching addons', error);
     }
   };
 
@@ -246,7 +267,10 @@ const PartyManager = () => {
                   <CloseIcon />
                 </IconButton>
               </div>
-              <Order partyId={selectedParty ? selectedParty.partyid : null} onOrderSent={handleOrderSent} />
+              <Order 
+                partyId={selectedParty ? selectedParty.partyid : null}
+                addons={addons}
+                onOrderSent={handleOrderSent} />
             </div>
           </div>
         )}

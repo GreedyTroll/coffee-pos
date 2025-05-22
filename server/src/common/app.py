@@ -42,6 +42,8 @@ from routes.seats.routes import seats_bp
 from routes.parties.routes import parties_bp
 from routes.orders.routes import orders_bp
 from routes.stats.routes import stats_bp
+from routes.tags.routes import tags_bp
+from routes.addons.routes import addons_bp
 
 app.register_blueprint(employees_bp, url_prefix='/employees')
 app.register_blueprint(menu_bp, url_prefix='/menu')
@@ -49,3 +51,5 @@ app.register_blueprint(seats_bp, url_prefix='/seats')
 app.register_blueprint(parties_bp, url_prefix='/parties')
 app.register_blueprint(orders_bp, url_prefix='/orders')
 app.register_blueprint(stats_bp, url_prefix='/stats')
+app.register_blueprint(tags_bp, url_prefix='/tags')
+app.register_blueprint(addons_bp, url_prefix='/addons')

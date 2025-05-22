@@ -4,28 +4,51 @@ import './TagAddonLinker.css';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const TagAddonLinker = ({ allTags, allAddons, item, closePopup, handleTagChange, handleAddonChange }) => {
+const TagAddonLinker = ({ allTags, allAddons, allAddonGroups, item, closePopup, handleTagChange, handleAddonChange, handleAddonGroupChange }) => {
     const [linkedTags, setLinkedTags] = useState(item.tags || []);
     const [unlinkedTags, setUnlinkedTags] = useState([]);
     const [linkedAddons, setLinkedAddons] = useState(item.addons || []);
     const [unlinkedAddons, setUnlinkedAddons] = useState([]);
+    const [linkedAddonGroups, setLinkedAddonGroups] = useState(item.addongroups || []);
+    const [unlinkedAddonGroups, setUnlinkedAddonGroups] = useState([]);
 
     useEffect(() => {
-        setUnlinkedAddons(allAddons.filter(a => !linkedAddons.some(la => la.addonid === a.addonid)));
+    }, []);
+    
+    useEffect(() => {
+        setLinkedTags(item.tags || []);
         setUnlinkedTags(allTags.filter(t => !linkedTags.some(lt => lt.tagid === t.tagid)));
-    }, [allTags, allAddons]);
+    }, [allTags, linkedTags]);
 
     useEffect(() => {
-        handleTagChange(item.categoryid, item.productid, {
+        const ungrouped = allAddons.filter(a => a.groupid === null);
+        setUnlinkedAddons(ungrouped.filter(a => !linkedAddons.some(la => la.addonid === a.addonid)));
+    }, [allAddons, linkedAddons]);
+
+    useEffect(() => {
+        // setLinkedAddonGroups(item.addongroups || []);
+        setUnlinkedAddonGroups(allAddonGroups.filter(g => !linkedAddonGroups.some(lg => lg.groupid === g.groupid)));
+    }, [allAddonGroups, linkedAddonGroups]);
+
+    useEffect(() => {
+        handleTagChange({
             target: { name: 'tags', value: linkedTags }
         });
     }, [linkedTags]);
 
     useEffect(() => {
-        handleAddonChange(item.categoryid, item.productid, {
+        item.addons = linkedAddons;
+        handleAddonChange({
             target: { name: 'addons', value: linkedAddons }
         });
     }, [linkedAddons]);
+
+    useEffect(() => {
+        item.addongroups = linkedAddonGroups;
+        handleAddonGroupChange({
+            target: { name: 'addongroups', value: linkedAddonGroups }
+        });
+    }, [linkedAddonGroups]);
 
     const handleTagClick = (tag, isLinked) => {
         if (isLinked) {
@@ -34,6 +57,16 @@ const TagAddonLinker = ({ allTags, allAddons, item, closePopup, handleTagChange,
         } else {
             setUnlinkedTags(unlinkedTags.filter(t => t.tagid !== tag.tagid));
             setLinkedTags([...linkedTags, tag]);
+        }
+    };
+
+    const handleAddonGroupClick = (group, isLinked) => {
+        if (isLinked) {
+            setLinkedAddonGroups(linkedAddonGroups.filter(g => g.groupname !== group.groupname));
+            setUnlinkedAddonGroups([...unlinkedAddonGroups, group]);
+        } else {
+            setUnlinkedAddonGroups(unlinkedAddonGroups.filter(g => g.groupname !== group.groupname));
+            setLinkedAddonGroups([...linkedAddonGroups, group]);
         }
     };
 
@@ -50,6 +83,7 @@ const TagAddonLinker = ({ allTags, allAddons, item, closePopup, handleTagChange,
     const handleClosePopup = () => {
         item.tags = linkedTags;
         item.addons = linkedAddons;
+        item.addongroups = linkedAddonGroups;
         closePopup();
     };
 
@@ -88,7 +122,25 @@ const TagAddonLinker = ({ allTags, allAddons, item, closePopup, handleTagChange,
                     <h3>Addons</h3>
                     <div className="addons-container">
                         <div className="linked-addons">
-                            <h4>Linked Addons</h4>
+                            <h4>Linked Addon Groups</h4>
+                            {linkedAddonGroups.map(group => (
+                                <div key={group.groupname} onClick={() => handleAddonGroupClick(group, true)}>
+                                    <span>{group.groupname}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="unlinked-addons">
+                            <h4>Unlinked Addon Groups</h4>
+                            {unlinkedAddonGroups.map(group => (
+                                <div key={group.groupname} onClick={() => handleAddonGroupClick(group, false)}>
+                                    <span>{group.groupname}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="addons-container">
+                        <div className="linked-addons">
+                            <h4>Linked Individual Addons</h4>
                             {linkedAddons.map(addon => (
                                 <div key={addon.addonid} onClick={() => handleAddonClick(addon, true)}>
                                     <span>{addon.addonname}</span>
@@ -97,7 +149,7 @@ const TagAddonLinker = ({ allTags, allAddons, item, closePopup, handleTagChange,
                             ))}
                         </div>
                         <div className="unlinked-addons">
-                            <h4>Unlinked Addons</h4>
+                            <h4>Unlinked Individual Addons</h4>
                             {unlinkedAddons.map(addon => (
                                 <div key={addon.addonid} onClick={() => handleAddonClick(addon, false)}>
                                     <span>{addon.addonname}</span>

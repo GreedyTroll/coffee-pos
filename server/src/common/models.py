@@ -69,20 +69,34 @@ class ItemTag(db.Model):
         PrimaryKeyConstraint('itemid', 'tagid'),
     )
 
+class AddonGroup(db.Model):
+    __tablename__ = 'addongroups'
+    groupid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    groupname = db.Column(db.String(100))
+    createdat = db.Column(db.DateTime, default=func.now())
+
 class Addon(db.Model):
     __tablename__ = 'addons'
+    addongroup = db.Column(db.Integer, db.ForeignKey('addongroups.groupid', ondelete='CASCADE'))
     addonid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     addonname = db.Column(db.String(100))
     price = db.Column(db.Numeric(10, 2))
-    category = db.Column(db.String(20))
     createdat = db.Column(db.DateTime, default=func.now())
 
-class AvailableAddon(db.Model):
-    __tablename__ = 'availableaddons'
+class LinkAddon(db.Model):
+    __tablename__ = 'linkaddons'
     itemid = db.Column(db.Integer, db.ForeignKey('items.productid'))
     addonid = db.Column(db.Integer, db.ForeignKey('addons.addonid'))
     __table_args__ = (
         PrimaryKeyConstraint('itemid', 'addonid'),
+    )
+
+class LinkAddonGroup(db.Model):
+    __tablename__ = 'linkaddongroups'
+    itemid = db.Column(db.Integer, db.ForeignKey('items.productid'))
+    groupid = db.Column(db.Integer, db.ForeignKey('addongroups.groupid'))
+    __table_args__ = (
+        PrimaryKeyConstraint('itemid', 'groupid'),
     )
 
 class PaymentMethod(db.Model):
@@ -99,6 +113,7 @@ class Order(db.Model):
     paymentmethod = db.Column(db.String(20), db.ForeignKey('paymentmethods.methodname'))
     paidtime = db.Column(db.DateTime)
     ordertype = db.Column(db.String(20))
+    prepared = db.Column(db.Boolean, default=False)
     notes = db.Column(db.Text)
 
 class OrderItem(db.Model):
@@ -123,5 +138,5 @@ class OrderDetail(db.Model):
     paidtime = db.Column(db.DateTime)
     ordertype = db.Column(db.String(20))
     items = db.Column(db.JSON)
-    preparing = db.Column(db.Boolean)
+    prepared = db.Column(db.Boolean)
     party = db.relationship('Party', backref='orderdetails')  # Add relationship to Party
